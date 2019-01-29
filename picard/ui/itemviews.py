@@ -84,7 +84,6 @@ from picard.util import (
     natsort,
     normpath,
     restore_method,
-    strxfrm,
 )
 
 from picard.ui.collectionmenu import CollectionMenu
@@ -924,7 +923,7 @@ class TreeItem(QtWidgets.QTreeWidgetItem):
         elif column in MainPanel.NAT_SORT_COLUMNS:
             sortkey = natsort.natkey(self.text(column))
         else:
-            sortkey = strxfrm(self.text(column))
+            sortkey = self.text(column).lower()
         self._sortkeys[column] = sortkey
         return sortkey
 

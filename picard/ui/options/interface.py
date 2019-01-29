@@ -44,7 +44,6 @@ from picard.config import (
 )
 from picard.const import UI_LANGUAGES
 from picard.const.sys import IS_MACOS
-from picard.util import strxfrm
 
 from picard.ui.options import (
     OptionsPage,
@@ -123,7 +122,7 @@ class InterfaceOptionsPage(OptionsPage):
         language_list = [(lang[0], lang[1], _(lang[2])) for lang in UI_LANGUAGES]
 
         def fcmp(x):
-            return strxfrm(x[2])
+            return x[2]
         for lang_code, native, translation in sorted(language_list, key=fcmp):
             if native and native != translation:
                 name = '%s (%s)' % (translation, native)
