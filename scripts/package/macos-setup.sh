@@ -2,7 +2,6 @@
 set -e
 
 # Install gettext
-brew update
 brew install gettext
 brew link gettext --force
 
@@ -29,9 +28,4 @@ cp "chromaprint-fpcalc-$FPCALC_VERSION-macos-x86_64/fpcalc" .
 
 # Install dependencies
 pip3 install --upgrade pip setuptools wheel
-pip3 install virtualenv
-
-# Setup virtualenv
-python3 -m virtualenv -p python3 .
-source bin/activate
 pip3 install -r requirements-build.txt

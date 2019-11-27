@@ -42,12 +42,9 @@ jobs:
         FPCALC_VERSION: 1.4.3
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        source bin/activate
         pip install -r requirements-macos.txt
     - name: Build macOS app
       run: |
-        source bin/activate
         ./scripts/package/macos-package-app.sh
         mv dist/*.dmg artifacts/
       env:

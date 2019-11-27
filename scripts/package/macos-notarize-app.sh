@@ -46,7 +46,7 @@ fi
 
 # Poll for notarization status
 echo -n "Submitted notarization request $REQUEST_UUID, waiting for response.."
-sleep 60
+sleep 20
 while :
 do
   RESULT=$(xcrun altool --notarization-info $REQUEST_UUID \
@@ -62,7 +62,7 @@ do
     break
   elif [ "$STATUS" = "in progress" ]; then
     echo -n .
-    sleep 30
+    sleep 20
   else
     echo "Notarizing $APP_BUNDLE failed:"
     echo $RESULT
