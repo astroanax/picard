@@ -44,7 +44,7 @@ def set_file_result_selected_entry_nbr(p_filename, p_selected_entry_nbr):
 
     This is the entry user last chose from the Match Dialog
     """
-    if (p_selected_entry_nbr is not None):
+    if p_selected_entry_nbr is not None:
         global __all_file_result_selected_entry_nbr
         __all_file_result_selected_entry_nbr[p_filename] = p_selected_entry_nbr
 
@@ -62,8 +62,7 @@ def get_all_match_dtls():
 
 
 def can_get_match_dtls(filename):
-    can_get_match_dtls = filename in __all_file_match_dtls
-    return can_get_match_dtls
+    return filename in __all_file_match_dtls
 
 
 def add_match_dtl_entry(match_dtl_entry):
@@ -75,9 +74,7 @@ def add_match_dtl_entry(match_dtl_entry):
 
     log.debug("MATCH: %s", str(match_dtl_entry))
 
-    match_dtl_entries = __all_file_match_dtls.get(__cur_file.filename)
-    if match_dtl_entries is None:
-        match_dtl_entries = []
+    match_dtl_entries = __all_file_match_dtls.get(__cur_file.filename, [])
 
     match_dtl_entries.append(match_dtl_entry)
     __all_file_match_dtls[__cur_file.filename] = match_dtl_entries
