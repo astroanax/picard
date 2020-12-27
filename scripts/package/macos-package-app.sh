@@ -39,10 +39,10 @@ if [ -f $CERTIFICATE_FILE ] && [ -n "$CODESIGN_MACOS_P12_PASSWORD" ]; then
     CODESIGN=1
 fi
 
-# Submit app for notarization on macOS >= 10.14
-if { [ "$MACOS_VERSION_MAJOR" -eq 10 ] && [ "$MACOS_VERSION_MINOR" -ge 14 ]; } || [ "$MACOS_VERSION_MAJOR" -ge 11 ]; then
-    NOTARIZE=1
-fi
+# # Submit app for notarization on macOS >= 10.14
+# if { [ "$MACOS_VERSION_MAJOR" -eq 10 ] && [ "$MACOS_VERSION_MINOR" -ge 14 ]; } || [ "$MACOS_VERSION_MAJOR" -ge 11 ]; then
+#     NOTARIZE=1
+# fi
 
 cd dist
 
