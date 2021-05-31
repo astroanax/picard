@@ -6,7 +6,7 @@
 # Copyright (C) 2006-2008, 2011-2014, 2017 Lukáš Lalinský
 # Copyright (C) 2007 Santiago M. Mola
 # Copyright (C) 2008 Robert Kaye
-# Copyright (C) 2008-2009, 2018-2020 Philipp Wolfer
+# Copyright (C) 2008-2009, 2018-2021 Philipp Wolfer
 # Copyright (C) 2009 Carlin Mangar
 # Copyright (C) 2011-2012, 2014, 2016-2018 Wieland Hoffmann
 # Copyright (C) 2011-2014 Michael Wiencek
@@ -36,6 +36,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
+# Setuptools recommends to be imported before anything from distutils
+import setuptools  # noqa: F401,E402 # pylint: disable=unused-import
 
 import datetime
 from distutils import log
