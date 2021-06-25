@@ -1108,11 +1108,6 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
             self.script_editor_dialog.signal_update_scripts_list.disconnect()
             self.script_editor_dialog.signal_index_changed.disconnect()
 
-            for op_page in options_dialog.pages:
-                if op_page.NAME == "filerenaming":
-                    op_page.show_script_editing_page()
-                    break
-
         return options_dialog
 
     def options_closed(self):

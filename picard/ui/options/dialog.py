@@ -178,6 +178,9 @@ class OptionsDialog(PicardDialog, SingletonDialog):
         item = self.page_to_item[name]
         item.setDisabled(True)
 
+    def get_page(self, name):
+        return self.item_to_page[self.page_to_item[name]]
+
     @property
     def help_url(self):
         current_page = self.ui.pages_stack.currentWidget()
@@ -215,6 +218,12 @@ class OptionsDialog(PicardDialog, SingletonDialog):
             error = OptionsCheckError(_('Unexpected error'), str(error))
         self.ui.pages_tree.setCurrentItem(self.page_to_item[page.NAME])
         page.display_error(error)
+
+    def show(self):
+        super().show()
+        if self.tagger.window.script_editor_is_open:
+            renaming_page = self.get_page('filerenaming')
+            renaming_page.show_script_editing_page(parent=self)
 
     def saveWindowState(self):
         expanded_pages = []

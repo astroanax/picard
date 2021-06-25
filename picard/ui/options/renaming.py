@@ -182,8 +182,10 @@ class RenamingOptionsPage(OptionsPage):
         """
         self.examples.synchronize_selected_example_lines(self.current_row, self.ui.example_filename_after, self.ui.example_filename_before)
 
-    def show_script_editing_page(self):
-        self.script_editor_dialog = ScriptEditorDialog.show_instance(parent=self, examples=self.examples)
+    def show_script_editing_page(self, parent=None):
+        if not parent:
+            parent = self
+        self.script_editor_dialog = ScriptEditorDialog.show_instance(parent=parent, examples=self.examples)
 
         self.script_editor_dialog.signal_save.connect(self.save_from_editor)
         self.script_editor_dialog.signal_update.connect(self.display_examples)
