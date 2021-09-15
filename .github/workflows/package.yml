@@ -86,7 +86,7 @@ jobs:
     - name: Install universal2 binary for PyQt5
       if: matrix.macos-deployment-version == '11.0'
       run: |
-        pip3 uninstall --yes PyQt5
+        # pip3 uninstall --yes PyQt5
         brew install pyqt@5
     - name: Run tests
       run: |
