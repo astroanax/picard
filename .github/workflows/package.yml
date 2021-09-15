@@ -70,11 +70,7 @@ jobs:
       run: |
         git clone --depth 1 --branch "$PYINSTALLER_VERSION" https://github.com/pyinstaller/pyinstaller.git pyinstaller
         cd pyinstaller/bootloader
-        if [ "$PYTHON_VARIANT" = "macos11" ]; then
-          python3 ./waf --universal2 all
-        else
-          python3 ./waf --no-universal2 all
-        fi
+        python3 ./waf all
         cd ..
         pip3 install .
       env:
