@@ -82,6 +82,8 @@ class CoverOptionsPage(OptionsPage):
         self.ui.save_images_to_files.clicked.connect(self.update_ca_providers_groupbox_state)
         self.ui.save_images_to_tags.clicked.connect(self.update_ca_providers_groupbox_state)
         self.ui.save_only_one_front_image.toggled.connect(self.ui.image_type_as_filename.setDisabled)
+        self.init_regex_checker(self.ui.local_cover_regex_edit, self.ui.local_cover_regex_error)
+        self.ui.local_cover_regex_default.clicked.connect(self.set_local_cover_regex_default)
         self.move_view = MoveableListView(self.ui.ca_providers_list, self.ui.up_button,
                                           self.ui.down_button)
 
@@ -113,6 +115,7 @@ class CoverOptionsPage(OptionsPage):
         self.ui.save_images_overwrite.setChecked(config.setting["save_images_overwrite"])
         self.ui.save_only_one_front_image.setChecked(config.setting["save_only_one_front_image"])
         self.ui.image_type_as_filename.setChecked(config.setting["image_type_as_filename"])
+        self.ui.local_cover_regex_edit.setText(config.setting["local_cover_regex"])
         self.load_cover_art_providers()
         self.ui.ca_providers_list.setCurrentRow(0)
         self.update_ca_providers_groupbox_state()
@@ -127,11 +130,15 @@ class CoverOptionsPage(OptionsPage):
         config.setting["save_only_one_front_image"] = self.ui.save_only_one_front_image.isChecked()
         config.setting["image_type_as_filename"] = self.ui.image_type_as_filename.isChecked()
         config.setting["ca_providers"] = self.ca_providers()
+        config.setting["local_cover_regex"] = self.ui.local_cover_regex_edit.text()
 
     def update_ca_providers_groupbox_state(self):
         files_enabled = self.ui.save_images_to_files.isChecked()
         tags_enabled = self.ui.save_images_to_tags.isChecked()
         self.ui.ca_providers_groupbox.setEnabled(files_enabled or tags_enabled)
+
+    def set_local_cover_regex_default(self):
+        self.ui.local_cover_regex_edit.setText(DEFAULT_LOCAL_COVER_ART_REGEX)
 
 
 register_options_page(CoverOptionsPage)
