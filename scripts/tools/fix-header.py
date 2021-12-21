@@ -55,21 +55,25 @@ def ranges(i):
 
 def extract_authors_from_gitlog(path):
     authors = {}
-    cmd = ['git', 'log', r'--pretty=format:%ad %aN', r'--date=format:%Y', r'--', path]
+    cmd = ['git', 'log', r'--pretty=format:%ad %aN|%s', r'--date=format:%Y', r'--', path]
     result = subprocess.run(cmd, stdout=subprocess.PIPE, timeout=30)  # nosec: B603
     if result.returncode == 0:
-        pattern = re.compile(r'^(\d+) (.*)$')
+        pattern = re.compile(r'^(?P<year>\d+) (?P<author>.*?)\|(?P<subject>.*)$')
         for line in result.stdout.decode('utf-8').split("\n"):
             match = pattern.search(line)
             if match:
-                year = int(match.group(1))
-                author = match.group(2)
-                author = ALIASES.get(author, author)
-                if author in authors:
-                    if year not in authors[author]:
-                        authors[author].append(year)
+                subject = match.group('subject')
+                if subject and 'fix-header' not in subject.lower():
+                    year = int(match.group('year'))
+                    author = match.group('author')
+                    author = ALIASES.get(author, author)
+                    if author in authors:
+                        if year not in authors[author]:
+                            authors[author].append(year)
+                    else:
+                        authors[author] = [year]
                 else:
-                    authors[author] = [year]
+                    print("Skipping commit: %s" % line, file=sys.stderr)
     return authors
 
 
