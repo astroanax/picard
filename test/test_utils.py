@@ -476,16 +476,6 @@ class SortBySimilarity(PicardTestCase):
         self.assertEqual(best_match.similarity, -1)
 
 
-class GetQtEnum(PicardTestCase):
-
-    def test_get_qt_enum(self):
-        from PyQt6.QtCore import QStandardPaths
-        values = util.get_qt_enum(QStandardPaths, QStandardPaths.LocateOption)
-        self.assertIn('LocateFile', values)
-        self.assertIn('LocateDirectory', values)
-        self.assertNotIn('DesktopLocation', values)
-
-
 class LimitedJoin(PicardTestCase):
 
     def setUp(self):
