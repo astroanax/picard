@@ -1,6 +1,5 @@
 python-dateutil~=2.7
 discid~=1.0
-fasteners~=0.14
 markdown~=3.2
 mutagen~=1.37
 PyJWT~=2.0
