@@ -27,7 +27,7 @@ import gettext
 import locale
 import os.path
 
-from PyQt5.QtCore import QLocale
+from PyQt6.QtCore import QLocale
 
 from picard.const.sys import (
     IS_MACOS,

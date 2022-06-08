@@ -28,7 +28,7 @@ from unittest.mock import (
     patch,
 )
 
-from PyQt5.QtNetwork import QNetworkProxy
+from PyQt6.QtNetwork import QNetworkProxy
 
 from test.picardtestcase import PicardTestCase
 

@@ -35,7 +35,7 @@ import logging
 import os
 from threading import Lock
 
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 
 _MAX_TAIL_LEN = 10**6

@@ -38,15 +38,15 @@ import os.path
 import platform
 import sys
 
-from PyQt5 import (
+from PyQt6 import (
     QtCore,
     QtNetwork,
 )
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     QUrl,
     QUrlQuery,
 )
-from PyQt5.QtNetwork import QNetworkRequest
+from PyQt6.QtNetwork import QNetworkRequest
 
 from picard import (
     PICARD_APP_NAME,

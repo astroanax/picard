@@ -35,12 +35,12 @@ from collections import (
 )
 from functools import partial
 
-from PyQt5 import (
+from PyQt6 import (
     QtCore,
     QtGui,
     QtWidgets,
 )
-from PyQt5.QtNetwork import (
+from PyQt6.QtNetwork import (
     QNetworkReply,
     QNetworkRequest,
 )

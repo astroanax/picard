@@ -59,7 +59,7 @@ import unicodedata
 
 from dateutil.parser import parse
 
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 from picard import log
 from picard.const import (
@@ -847,7 +847,7 @@ def get_qt_enum(cls, enum):
     List all the names of attributes inside a Qt enum.
 
     Example:
-        >>> from PyQt5.Qt import Qt
+        >>> from PyQt6.Qt import Qt
         >>> print(get_qt_enum(Qt, Qt.CoordinateSystem))
         ['DeviceCoordinates', 'LogicalCoordinates']
     """
