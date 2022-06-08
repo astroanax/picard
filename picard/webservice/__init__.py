@@ -46,7 +46,10 @@ from PyQt6.QtCore import (
     QUrl,
     QUrlQuery,
 )
-from PyQt6.QtNetwork import QNetworkRequest
+from PyQt6.QtNetwork import (
+    QNetworkReply,
+    QNetworkRequest,
+)
 
 from picard import (
     PICARD_APP_NAME,
@@ -325,8 +328,6 @@ class WebService(QtCore.QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.manager = QtNetwork.QNetworkAccessManager()
-        self._network_accessible_changed(self.manager.networkAccessible())
-        self.manager.networkAccessibleChanged.connect(self._network_accessible_changed)
         self.oauth_manager = OAuthManager(self)
         self.set_cache()
         self.setup_proxy()
@@ -354,15 +355,6 @@ class WebService(QtCore.QObject):
     @staticmethod
     def http_response_safe_url(reply):
         return reply.request().url().toString(QUrl.UrlFormattingOption.RemoveUserInfo)
-
-    def _network_accessible_changed(self, accessible):
-        # Qt's network accessibility check sometimes fails, e.g. with VPNs on Windows.
-        # If the accessibility is reported to be not accessible, set it to
-        # unknown instead. Let's just try any request and handle the error.
-        # See https://tickets.metabrainz.org/browse/PICARD-1791
-        if accessible == QtNetwork.QNetworkAccessManager.NetworkAccessibility.NotAccessible:
-            self.manager.setNetworkAccessible(QtNetwork.QNetworkAccessManager.NetworkAccessibility.UnknownAccessibility)
-        log.debug("Network accessible requested: %s, actual: %s", accessible, self.manager.networkAccessible())
 
     def _init_queues(self):
         self._active_requests = {}
@@ -507,21 +499,20 @@ class WebService(QtCore.QObject):
 
         slow_down = False
 
-        error = int(reply.error())
+        error = reply.error()
         handler = request.handler
         response_code = self.http_response_code(reply)
         url = self.http_response_safe_url(reply)
-        if error:
+        if error != QNetworkReply.NetworkError.NoError:
             errstr = reply.errorString()
-            log.error("Network request error for %s: %s (QT code %d, HTTP code %d)",
+            log.error("Network request error for %s: %s (QT code %r, HTTP code %d)",
                       url, errstr, error, response_code)
             if (not request.max_retries_reached()
                 and (response_code == 503
                      or response_code == 429
                      # Sometimes QT returns a http status code of 200 even when there
-                     # is a service unavailable error. But it returns a QT error code
-                     # of 403 when this happens
-                     or error == 403
+                     # is a service unavailable error.
+                     or error == QNetworkReply.NetworkError.ServiceUnavailableError
                      )):
                 slow_down = True
                 retries = request.mark_for_retry()

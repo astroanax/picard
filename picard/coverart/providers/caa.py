@@ -426,7 +426,7 @@ class CAATypesSelectorDialog(PicardDialog):
         if types_exclude is None:
             types_exclude = []
         dialog = CAATypesSelectorDialog(parent, types_include, types_exclude)
-        result = dialog.exec_()
+        result = dialog.exec()
         return (dialog.get_selected_types_include(), dialog.get_selected_types_exclude(), result == QtWidgets.QDialog.DialogCode.Accepted)
 
 

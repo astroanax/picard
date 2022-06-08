@@ -258,7 +258,7 @@ class AcoustIDClient(QtCore.QObject):
         process = QtCore.QProcess(self)
         process.setProperty('picard_finished', False)
         process.finished.connect(partial(self._on_fpcalc_finished, task))
-        process.error.connect(partial(self._on_fpcalc_error, task))
+        process.errorOccurred.connect(partial(self._on_fpcalc_error, task))
         file_path = task.file.filename
         if IS_WIN:
             file_path = win_prefix_longpath(file_path)

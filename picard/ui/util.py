@@ -27,6 +27,7 @@
 
 from PyQt6 import (
     QtCore,
+    QtGui,
     QtWidgets,
 )
 
@@ -86,5 +87,5 @@ class MultiDirsSelectDialog(QtWidgets.QFileDialog):
         # The native dialog doesn't allow selecting >1 directory
         self.setOption(self.DontUseNativeDialog)
         for view in self.findChildren((QtWidgets.QListView, QtWidgets.QTreeView)):
-            if isinstance(view.model(), QtWidgets.QFileSystemModel):
+            if isinstance(view.model(), QtGui.QFileSystemModel):
                 view.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)

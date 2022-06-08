@@ -350,7 +350,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
             cancel = msg.addButton(QMessageBox.StandardButton.Cancel)
             msg.setDefaultButton(cancel)
             msg.addButton(_("&Quit Picard"), QMessageBox.ButtonRole.YesRole)
-            ret = msg.exec_()
+            ret = msg.exec()
 
             if ret == QMessageBox.StandardButton.Cancel:
                 return False
@@ -360,9 +360,9 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     def saveWindowState(self):
         config = get_config()
         config.persist["window_state"] = self.saveState()
-        isMaximized = int(self.windowState()) & QtCore.Qt.WindowState.WindowMaximized != 0
+        is_maximized = bool(self.windowState() & QtCore.Qt.WindowState.WindowMaximized)
         self.save_geometry()
-        config.persist["window_maximized"] = isMaximized
+        config.persist["window_maximized"] = is_maximized
         config.persist["view_metadata_view"] = self.show_metadata_view_action.isChecked()
         config.persist["view_cover_art"] = self.show_cover_art_action.isChecked()
         config.persist["view_toolbar"] = self.show_toolbar_action.isChecked()
@@ -482,7 +482,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
                     icontheme.lookup('preferences-desktop'), _("Open AcoustID options"))
                 msg.addButton(QtWidgets.QMessageBox.StandardButton.Cancel)
                 msg.addButton(open_options, QtWidgets.QMessageBox.ButtonRole.YesRole)
-                msg.exec_()
+                msg.exec()
                 if msg.clickedButton() == open_options:
                     self.show_options("fingerprinting")
             else:
@@ -490,21 +490,21 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_options_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('preferences-desktop'), _("&Options..."), self)
-        action.setMenuRole(QtWidgets.QAction.MenuRole.PreferencesRole)
+        action = QtGui.QAction(icontheme.lookup('preferences-desktop'), _("&Options..."), self)
+        action.setMenuRole(QtGui.QAction.MenuRole.PreferencesRole)
         action.triggered.connect(self.show_options)
         self.options_action = action
 
     @MainWindowActions.add()
     def _create_show_script_editor_action(self):
-        action = QtWidgets.QAction(_("Open &file naming script editor..."))
+        action = QtGui.QAction(_("Open &file naming script editor..."))
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+Shift+S")))
         action.triggered.connect(self.open_file_naming_script_editor)
         self.show_script_editor_action = action
 
     @MainWindowActions.add()
     def _create_cut_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('edit-cut', icontheme.ICON_SIZE_MENU), _("&Cut"), self)
+        action = QtGui.QAction(icontheme.lookup('edit-cut', icontheme.ICON_SIZE_MENU), _("&Cut"), self)
         action.setShortcut(QtGui.QKeySequence.StandardKey.Cut)
         action.setEnabled(False)
         action.triggered.connect(self.cut)
@@ -512,7 +512,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_paste_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('edit-paste', icontheme.ICON_SIZE_MENU), _("&Paste"), self)
+        action = QtGui.QAction(icontheme.lookup('edit-paste', icontheme.ICON_SIZE_MENU), _("&Paste"), self)
         action.setShortcut(QtGui.QKeySequence.StandardKey.Paste)
         action.setEnabled(False)
         action.triggered.connect(self.paste)
@@ -520,39 +520,39 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_help_action(self):
-        action = QtWidgets.QAction(_("&Help..."), self)
+        action = QtGui.QAction(_("&Help..."), self)
         action.setShortcut(QtGui.QKeySequence.StandardKey.HelpContents)
         action.triggered.connect(self.show_help)
         self.help_action = action
 
     @MainWindowActions.add()
     def _create_about_action(self):
-        action = QtWidgets.QAction(_("&About..."), self)
-        action.setMenuRole(QtWidgets.QAction.MenuRole.AboutRole)
+        action = QtGui.QAction(_("&About..."), self)
+        action.setMenuRole(QtGui.QAction.MenuRole.AboutRole)
         action.triggered.connect(self.show_about)
         self.about_action = action
 
     @MainWindowActions.add()
     def _create_donate_action(self):
-        action = QtWidgets.QAction(_("&Donate..."), self)
+        action = QtGui.QAction(_("&Donate..."), self)
         action.triggered.connect(self.open_donation_page)
         self.donate_action = action
 
     @MainWindowActions.add()
     def _create_report_bug_action(self):
-        action = QtWidgets.QAction(_("&Report a Bug..."), self)
+        action = QtGui.QAction(_("&Report a Bug..."), self)
         action.triggered.connect(self.open_bug_report)
         self.report_bug_action = action
 
     @MainWindowActions.add()
     def _create_support_forum_action(self):
-        action = QtWidgets.QAction(_("&Support Forum..."), self)
+        action = QtGui.QAction(_("&Support Forum..."), self)
         action.triggered.connect(self.open_support_forum)
         self.support_forum_action = action
 
     @MainWindowActions.add()
     def _create_add_files_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('document-open'), _("&Add Files..."), self)
+        action = QtGui.QAction(icontheme.lookup('document-open'), _("&Add Files..."), self)
         action.setStatusTip(_("Add files to the tagger"))
         # TR: Keyboard shortcut for "Add Files..."
         action.setShortcut(QtGui.QKeySequence.StandardKey.Open)
@@ -561,7 +561,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_add_directory_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('folder'), _("Add Fold&er..."), self)
+        action = QtGui.QAction(icontheme.lookup('folder'), _("Add Fold&er..."), self)
         action.setStatusTip(_("Add a folder to the tagger"))
         # TR: Keyboard shortcut for "Add Directory..."
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+E")))
@@ -571,7 +571,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_close_window_action(self):
         if self.show_close_window:
-            action = QtWidgets.QAction(_("Close Window"), self)
+            action = QtGui.QAction(_("Close Window"), self)
             action.setShortcut(QtGui.QKeySequence(_("Ctrl+W")))
             action.triggered.connect(self.close_active_window)
         else:
@@ -580,7 +580,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_save_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('document-save'), _("&Save"), self)
+        action = QtGui.QAction(icontheme.lookup('document-save'), _("&Save"), self)
         action.setStatusTip(_("Save selected files"))
         # TR: Keyboard shortcut for "Save"
         action.setShortcut(QtGui.QKeySequence.StandardKey.Save)
@@ -590,7 +590,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_submit_acoustid_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('acoustid-fingerprinter'), _("S&ubmit AcoustIDs"), self)
+        action = QtGui.QAction(icontheme.lookup('acoustid-fingerprinter'), _("S&ubmit AcoustIDs"), self)
         action.setStatusTip(_("Submit acoustic fingerprints"))
         action.setEnabled(False)
         action.triggered.connect(self._on_submit_acoustid)
@@ -598,8 +598,8 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_exit_action(self):
-        action = QtWidgets.QAction(_("E&xit"), self)
-        action.setMenuRole(QtWidgets.QAction.MenuRole.QuitRole)
+        action = QtGui.QAction(_("E&xit"), self)
+        action.setMenuRole(QtGui.QAction.MenuRole.QuitRole)
         # TR: Keyboard shortcut for "Exit"
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+Q")))
         action.triggered.connect(self.close)
@@ -607,7 +607,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_remove_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('list-remove'), _("&Remove"), self)
+        action = QtGui.QAction(icontheme.lookup('list-remove'), _("&Remove"), self)
         action.setStatusTip(_("Remove selected files/albums"))
         action.setEnabled(False)
         action.triggered.connect(self.remove)
@@ -615,7 +615,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_browser_lookup_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('lookup-musicbrainz'), _("Lookup in &Browser"), self)
+        action = QtGui.QAction(icontheme.lookup('lookup-musicbrainz'), _("Lookup in &Browser"), self)
         action.setStatusTip(_("Lookup selected item on MusicBrainz website"))
         action.setEnabled(False)
         # TR: Keyboard shortcut for "Lookup in Browser"
@@ -626,7 +626,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_submit_cluster_action(self):
         if addrelease.is_available():
-            action = QtWidgets.QAction(_("Submit cluster as release..."), self)
+            action = QtGui.QAction(_("Submit cluster as release..."), self)
             action.setStatusTip(_("Submit cluster as a new release to MusicBrainz"))
             action.setEnabled(False)
             action.triggered.connect(self.submit_cluster)
@@ -637,7 +637,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_submit_file_as_recording_action(self):
         if addrelease.is_available():
-            action = QtWidgets.QAction(_("Submit file as standalone recording..."), self)
+            action = QtGui.QAction(_("Submit file as standalone recording..."), self)
             action.setStatusTip(_("Submit file as a new recording to MusicBrainz"))
             action.setEnabled(False)
             action.triggered.connect(self.submit_file)
@@ -648,7 +648,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_submit_file_as_release_action(self):
         if addrelease.is_available():
-            action = QtWidgets.QAction(_("Submit file as release..."), self)
+            action = QtGui.QAction(_("Submit file as release..."), self)
             action.setStatusTip(_("Submit file as a new release to MusicBrainz"))
             action.setEnabled(False)
             action.triggered.connect(partial(self.submit_file, as_release=True))
@@ -658,14 +658,14 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_album_search_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('system-search'), _("Search for similar albums..."), self)
+        action = QtGui.QAction(icontheme.lookup('system-search'), _("Search for similar albums..."), self)
         action.setStatusTip(_("View similar releases and optionally choose a different release"))
         action.triggered.connect(self.show_more_albums)
         self.album_search_action = action
 
     @MainWindowActions.add()
     def _create_track_search_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('system-search'), _("Search for similar tracks..."), self)
+        action = QtGui.QAction(icontheme.lookup('system-search'), _("Search for similar tracks..."), self)
         action.setStatusTip(_("View similar tracks and optionally choose a different release"))
         action.setEnabled(False)
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+T")))
@@ -674,7 +674,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_album_other_versions_action(self):
-        action = QtWidgets.QAction(_("Show &other album versions..."), self)
+        action = QtGui.QAction(_("Show &other album versions..."), self)
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+Shift+O")))
         action.triggered.connect(self.show_album_other_versions)
         self.album_other_versions_action = action
@@ -682,7 +682,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_show_file_browser_action(self):
         config = get_config()
-        action = QtWidgets.QAction(_("File &Browser"), self)
+        action = QtGui.QAction(_("File &Browser"), self)
         action.setCheckable(True)
         if config.persist["view_file_browser"]:
             action.setChecked(True)
@@ -693,7 +693,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_show_metadata_view_action(self):
         config = get_config()
-        action = QtWidgets.QAction(_("&Metadata"), self)
+        action = QtGui.QAction(_("&Metadata"), self)
         action.setCheckable(True)
         if config.persist["view_metadata_view"]:
             action.setChecked(True)
@@ -704,7 +704,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_show_cover_art_action(self):
         config = get_config()
-        action = QtWidgets.QAction(_("&Cover Art"), self)
+        action = QtGui.QAction(_("&Cover Art"), self)
         action.setCheckable(True)
         if config.persist["view_cover_art"]:
             action.setChecked(True)
@@ -715,7 +715,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_show_toolbar_action(self):
         config = get_config()
-        action = QtWidgets.QAction(_("&Actions"), self)
+        action = QtGui.QAction(_("&Actions"), self)
         action.setCheckable(True)
         if config.persist["view_toolbar"]:
             action.setChecked(True)
@@ -724,14 +724,14 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_search_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('system-search'), _("Search"), self)
+        action = QtGui.QAction(icontheme.lookup('system-search'), _("Search"), self)
         action.setEnabled(False)
         action.triggered.connect(self.search)
         self.search_action = action
 
     @MainWindowActions.add()
     def _create_cd_lookup_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('media-optical'), _("Lookup &CD..."), self)
+        action = QtGui.QAction(icontheme.lookup('media-optical'), _("Lookup &CD..."), self)
         action.setStatusTip(_("Lookup the details of the CD in your drive"))
         # TR: Keyboard shortcut for "Lookup CD"
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+K")))
@@ -751,7 +751,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_analyze_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('picard-analyze'), _("&Scan"), self)
+        action = QtGui.QAction(icontheme.lookup('picard-analyze'), _("&Scan"), self)
         action.setStatusTip(_("Use AcoustID audio fingerprint to identify the files by the actual music, even if they have no metadata"))
         action.setEnabled(False)
         action.setToolTip(_('Identify the file using its AcoustID audio fingerprint'))
@@ -762,7 +762,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_generate_fingerprints_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('fingerprint'), _("&Generate AcoustID Fingerprints"), self)
+        action = QtGui.QAction(icontheme.lookup('fingerprint'), _("&Generate AcoustID Fingerprints"), self)
         action.setIconText(_("Generate Fingerprints"))
         action.setStatusTip(_("Generate the AcoustID audio fingerprints for the selected files without doing a lookup"))
         action.setEnabled(False)
@@ -773,7 +773,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_cluster_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('picard-cluster'), _("Cl&uster"), self)
+        action = QtGui.QAction(icontheme.lookup('picard-cluster'), _("Cl&uster"), self)
         action.setStatusTip(_("Cluster files into album clusters"))
         action.setEnabled(False)
         # TR: Keyboard shortcut for "Cluster"
@@ -783,7 +783,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_autotag_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('picard-auto-tag'), _("&Lookup"), self)
+        action = QtGui.QAction(icontheme.lookup('picard-auto-tag'), _("&Lookup"), self)
         tip = _("Lookup selected items in MusicBrainz")
         action.setToolTip(tip)
         action.setStatusTip(tip)
@@ -795,7 +795,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_view_info_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('picard-edit-tags'), _("&Info..."), self)
+        action = QtGui.QAction(icontheme.lookup('picard-edit-tags'), _("&Info..."), self)
         action.setEnabled(False)
         # TR: Keyboard shortcut for "Info"
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+I")))
@@ -804,7 +804,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_refresh_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('view-refresh', icontheme.ICON_SIZE_MENU), _("&Refresh"), self)
+        action = QtGui.QAction(icontheme.lookup('view-refresh', icontheme.ICON_SIZE_MENU), _("&Refresh"), self)
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+R")))
         action.triggered.connect(self.refresh)
         self.refresh_action = action
@@ -812,7 +812,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_enable_renaming_action(self):
         config = get_config()
-        action = QtWidgets.QAction(_("&Rename Files"), self)
+        action = QtGui.QAction(_("&Rename Files"), self)
         action.setCheckable(True)
         action.setChecked(config.setting["rename_files"])
         action.triggered.connect(self.toggle_rename_files)
@@ -821,7 +821,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_enable_moving_action(self):
         config = get_config()
-        action = QtWidgets.QAction(_("&Move Files"), self)
+        action = QtGui.QAction(_("&Move Files"), self)
         action.setCheckable(True)
         action.setChecked(config.setting["move_files"])
         action.triggered.connect(self.toggle_move_files)
@@ -830,7 +830,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_enable_tag_saving_action(self):
         config = get_config()
-        action = QtWidgets.QAction(_("Save &Tags"), self)
+        action = QtGui.QAction(_("Save &Tags"), self)
         action.setCheckable(True)
         action.setChecked(not config.setting["dont_write_tags"])
         action.triggered.connect(self.toggle_tag_saving)
@@ -838,7 +838,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_tags_from_filenames_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('picard-tags-from-filename'), _("Tags From &File Names..."), self)
+        action = QtGui.QAction(icontheme.lookup('picard-tags-from-filename'), _("Tags From &File Names..."), self)
         action.setIconText(_("Parse File Names..."))
         action.setToolTip(_('Set tags based on the file names'))
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+Shift+T")))
@@ -849,14 +849,14 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_open_collection_in_browser_action(self):
         config = get_config()
-        action = QtWidgets.QAction(_("&Open My Collections in Browser"), self)
+        action = QtGui.QAction(_("&Open My Collections in Browser"), self)
         action.setEnabled(config.setting["username"] != '')
         action.triggered.connect(self.open_collection_in_browser)
         self.open_collection_in_browser_action = action
 
     @MainWindowActions.add()
     def _create_view_log_action(self):
-        action = QtWidgets.QAction(_("View &Error/Debug Log"), self)
+        action = QtGui.QAction(_("View &Error/Debug Log"), self)
         # TR: Keyboard shortcut for "View Error/Debug Log"
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+G")))
         action.triggered.connect(self.show_log)
@@ -864,7 +864,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_view_history_action(self):
-        action = QtWidgets.QAction(_("View Activity &History"), self)
+        action = QtGui.QAction(_("View Activity &History"), self)
         # TR: Keyboard shortcut for "View Activity History"
         # On macOS ⌘+H is a system shortcut to hide the window. Use ⌘+Shift+H instead.
         action.setShortcut(QtGui.QKeySequence(_("Ctrl+Shift+H") if IS_MACOS else _("Ctrl+H")))
@@ -873,7 +873,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_play_file_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('play-music'), _("Open in &Player"), self)
+        action = QtGui.QAction(icontheme.lookup('play-music'), _("Open in &Player"), self)
         action.setStatusTip(_("Play the file in your default media player"))
         action.setEnabled(False)
         action.triggered.connect(self.play_file)
@@ -881,7 +881,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     @MainWindowActions.add()
     def _create_open_folder_action(self):
-        action = QtWidgets.QAction(icontheme.lookup('folder', icontheme.ICON_SIZE_MENU), _("Open Containing &Folder"), self)
+        action = QtGui.QAction(icontheme.lookup('folder', icontheme.ICON_SIZE_MENU), _("Open Containing &Folder"), self)
         action.setStatusTip(_("Open the containing folder in your file explorer"))
         action.setEnabled(False)
         action.triggered.connect(self.open_folder)
@@ -890,8 +890,8 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     @MainWindowActions.add()
     def _create_check_update_action(self):
         if self.tagger.autoupdate_enabled:
-            action = QtWidgets.QAction(_("&Check for Update…"), self)
-            action.setMenuRole(QtWidgets.QAction.MenuRole.ApplicationSpecificRole)
+            action = QtGui.QAction(_("&Check for Update…"), self)
+            action.setMenuRole(QtGui.QAction.MenuRole.ApplicationSpecificRole)
             action.triggered.connect(self.do_update_check)
         else:
             action = None
@@ -976,7 +976,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
         files = self.get_selected_or_unmatched_files()
         if files:
             dialog = TagsFromFileNamesDialog(files, self)
-            dialog.exec_()
+            dialog.exec()
 
     def open_collection_in_browser(self):
         self.tagger.collection_lookup()
@@ -1157,12 +1157,12 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
                 config.setting[opt] = checked
 
             for opt, label in opts.items():
-                action = QtWidgets.QAction(_(label), menu)
+                action = QtGui.QAction(_(label), menu)
                 action.setCheckable(True)
                 action.setChecked(config.setting[opt])
                 action.triggered.connect(partial(toggle_opt, opt))
                 menu.addAction(action)
-            menu.exec_(self.search_button.mapToGlobal(position))
+            menu.exec(self.search_button.mapToGlobal(position))
 
         self.search_button.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.search_button.customContextMenuRequested.connect(search_button_menu)
@@ -1265,7 +1265,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
                 dir_list.append(directory)
         else:
             file_dialog = MultiDirsSelectDialog(self, "", current_directory)
-            if file_dialog.exec_() == QtWidgets.QDialog.DialogCode.Accepted:
+            if file_dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
                 dir_list = file_dialog.selectedFiles()
 
         dir_count = len(dir_list)
@@ -1408,7 +1408,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
             return
         dialog = TrackSearchDialog(self, force_advanced_search=True)
         dialog.show_similar_tracks(obj)
-        dialog.exec_()
+        dialog.exec()
 
     def show_more_albums(self):
         obj = self.get_first_obj_with_type(Cluster)
@@ -1417,7 +1417,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
             return
         dialog = AlbumSearchDialog(self, force_advanced_search=True)
         dialog.show_similar_albums(obj)
-        dialog.exec_()
+        dialog.exec()
 
     def show_album_other_versions(self):
         obj = self.get_first_obj_with_type(Album)
@@ -1443,7 +1443,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
             dialog_class = FileInfoDialog
         dialog = dialog_class(selected, self)
         dialog.ui.tabWidget.setCurrentIndex(default_tab)
-        dialog.exec_()
+        dialog.exec()
 
     def cluster(self):
         # Cluster all selected unclustered files. If there are no selected
@@ -1694,7 +1694,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
                 self.tagger.mb_login(self.on_mb_login_finished)
         else:
             dialog = PasswordDialog(authenticator, reply, parent=self)
-            dialog.exec_()
+            dialog.exec()
 
     def on_mb_login_finished(self, successful, error_msg):
         if successful:
@@ -1707,7 +1707,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
     def show_proxy_dialog(self, proxy, authenticator):
         dialog = ProxyDialog(authenticator, proxy, parent=self)
-        dialog.exec_()
+        dialog.exec()
 
     def autotag(self):
         self.tagger.autotag(self.selected_objects)
@@ -1811,11 +1811,11 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
 
         self.script_quick_selector_menu.clear()
 
-        group = QtWidgets.QActionGroup(self.script_quick_selector_menu)
+        group = QtGui.QActionGroup(self.script_quick_selector_menu)
         group.setExclusive(True)
 
         def _add_menu_item(title, id):
-            script_action = QtWidgets.QAction(title, self.script_quick_selector_menu)
+            script_action = QtGui.QAction(title, self.script_quick_selector_menu)
             script_action.triggered.connect(partial(self.select_new_naming_script, id))
             script_action.setCheckable(True)
             script_action.setChecked(id == selected_script_id)
@@ -1914,11 +1914,11 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
         self.profile_quick_selector_menu.setDisabled(False)
         self.profile_quick_selector_menu.clear()
 
-        group = QtWidgets.QActionGroup(self.profile_quick_selector_menu)
+        group = QtGui.QActionGroup(self.profile_quick_selector_menu)
         group.setExclusive(False)
 
         def _add_menu_item(title, enabled, profile_id):
-            profile_action = QtWidgets.QAction(title, self.profile_quick_selector_menu)
+            profile_action = QtGui.QAction(title, self.profile_quick_selector_menu)
             profile_action.triggered.connect(partial(self.update_profile_selection, profile_id))
             profile_action.setCheckable(True)
             profile_action.setChecked(enabled)

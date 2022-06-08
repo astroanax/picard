@@ -126,7 +126,7 @@ class PluginTreeWidgetItem(HashableTreeWidgetItem):
 
     @staticmethod
     def set_icon(button, stdicon):
-        button.setIcon(button.style().standardIcon(getattr(QtWidgets.QStyle, stdicon)))
+        button.setIcon(button.style().standardIcon(getattr(QtWidgets.QStyle.StandardPixmap, stdicon)))
         # Workaround for Qt sometimes not updating the icon.
         # See https://tickets.metabrainz.org/browse/PICARD-1647
         button.repaint()
@@ -667,7 +667,7 @@ class PluginsOptionsPage(OptionsPage):
             msgbox.setInformativeText(_("Please try again later."))
             msgbox.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
             msgbox.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Ok)
-            msgbox.exec_()
+            msgbox.exec()
             log.error("Error occurred while trying to download the plugin: '%s'" % plugin.module_name)
             return
 

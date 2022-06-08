@@ -188,7 +188,7 @@ class MaintenanceOptionsPage(OptionsPage):
             QtWidgets.QMessageBox.StandardButton.Ok,
             self
         )
-        dialog.exec_()
+        dialog.exec()
 
     def save_backup(self):
         config = get_config()
@@ -216,7 +216,7 @@ class MaintenanceOptionsPage(OptionsPage):
                 QtWidgets.QMessageBox.StandardButton.Ok,
                 self
             )
-            dialog.exec_()
+            dialog.exec()
         else:
             self._backup_error(dialog_title)
 
@@ -231,7 +231,7 @@ class MaintenanceOptionsPage(OptionsPage):
             self
         )
         dialog.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Cancel)
-        if not dialog.exec_() == QtWidgets.QMessageBox.StandardButton.Ok:
+        if not dialog.exec() == QtWidgets.QMessageBox.StandardButton.Ok:
             return
 
         config = get_config()
@@ -269,7 +269,7 @@ class MaintenanceOptionsPage(OptionsPage):
                 QtWidgets.QMessageBox.StandardButton.Ok,
                 self
             )
-        dialog.exec_()
+        dialog.exec()
 
     def column_items(self, column):
         for idx in range(self.ui.tableWidget.rowCount()):

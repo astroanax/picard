@@ -100,7 +100,7 @@ ICON_SIZE = QtCore.QSize(COLUMN_ICON_SIZE+COLUMN_ICON_BORDER,
                          COLUMN_ICON_SIZE+COLUMN_ICON_BORDER)
 
 
-class BaseAction(QtWidgets.QAction):
+class BaseAction(QtGui.QAction):
     NAME = "Unknown"
     MENU = []
 
@@ -386,7 +386,7 @@ class ConfigurableColumnsHeader(TristateSortHeaderView):
         for i, column in enumerate(MainPanel.columns):
             if i == 0:
                 continue
-            action = QtWidgets.QAction(_(column[0]), parent)
+            action = QtGui.QAction(_(column[0]), parent)
             action.setCheckable(True)
             action.setChecked(i in self._visible_columns)
             action.setEnabled(not self.is_locked)
@@ -394,18 +394,18 @@ class ConfigurableColumnsHeader(TristateSortHeaderView):
             menu.addAction(action)
 
         menu.addSeparator()
-        restore_action = QtWidgets.QAction(_('Restore default columns'), parent)
+        restore_action = QtGui.QAction(_('Restore default columns'), parent)
         restore_action.setEnabled(not self.is_locked)
         restore_action.triggered.connect(self.restore_defaults)
         menu.addAction(restore_action)
 
-        lock_action = QtWidgets.QAction(_('Lock columns'), parent)
+        lock_action = QtGui.QAction(_('Lock columns'), parent)
         lock_action.setCheckable(True)
         lock_action.setChecked(self.is_locked)
         lock_action.toggled.connect(self.lock)
         menu.addAction(lock_action)
 
-        menu.exec_(event.globalPos())
+        menu.exec(event.globalPos())
         event.accept()
 
     def restore_defaults(self):
@@ -451,11 +451,11 @@ class BaseTreeView(QtWidgets.QTreeWidget):
 
         self.setSortingEnabled(True)
 
-        self.expand_all_action = QtWidgets.QAction(_("&Expand all"), self)
+        self.expand_all_action = QtGui.QAction(_("&Expand all"), self)
         self.expand_all_action.triggered.connect(self.expandAll)
-        self.collapse_all_action = QtWidgets.QAction(_("&Collapse all"), self)
+        self.collapse_all_action = QtGui.QAction(_("&Collapse all"), self)
         self.collapse_all_action.triggered.connect(self.collapseAll)
-        self.select_all_action = QtWidgets.QAction(_("Select &all"), self)
+        self.select_all_action = QtGui.QAction(_("Select &all"), self)
         self.select_all_action.triggered.connect(self.selectAll)
         self.select_all_action.setShortcut(QtGui.QKeySequence(_("Ctrl+A")))
         self.doubleClicked.connect(self.activate_item)
@@ -657,7 +657,7 @@ class BaseTreeView(QtWidgets.QTreeWidget):
             menu.addAction(self.collapse_all_action)
 
         menu.addAction(self.select_all_action)
-        menu.exec_(event.globalPos())
+        menu.exec(event.globalPos())
         event.accept()
 
     @restore_method
@@ -711,7 +711,7 @@ class BaseTreeView(QtWidgets.QTreeWidget):
             pixmap = QtGui.QPixmap(rectangle.width(), rectangle.height())
             self.viewport().render(pixmap, QtCore.QPoint(), QtGui.QRegion(rectangle))
             drag.setPixmap(pixmap)
-            drag.exec_(QtCore.Qt.DropAction.MoveAction)
+            drag.exec(QtCore.Qt.DropAction.MoveAction)
 
     def mimeData(self, items):
         """Return MIME data for specified items."""
@@ -763,7 +763,7 @@ class BaseTreeView(QtWidgets.QTreeWidget):
     def dropEvent(self, event):
         # Dropping with Alt key pressed forces all dropped files being
         # assigned to the same track.
-        if event.keyboardModifiers() == QtCore.Qt.KeyboardModifier.AltModifier:
+        if event.modifiers() == QtCore.Qt.KeyboardModifier.AltModifier:
             self._move_to_multi_tracks = False
         return QtWidgets.QTreeView.dropEvent(self, event)
 

@@ -221,7 +221,7 @@ class OptionsDialog(PicardDialog, SingletonDialog):
             message_box.setWindowTitle(window_title)
             message_box.setText(_("The options on this page are not currently available to be managed using profiles."))
             message_box.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
-            return message_box.exec_()
+            return message_box.exec()
 
         override_profiles = self.profile_page._clean_and_get_all_profiles()
         override_settings = self.profile_page.profile_settings
@@ -434,7 +434,7 @@ class OptionsDialog(PicardDialog, SingletonDialog):
         message_box.setWindowTitle(_("Confirm Reset"))
         message_box.setText(_("Are you sure?") + "\n\n" + msg)
         message_box.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No)
-        if message_box.exec_() == QtWidgets.QMessageBox.StandardButton.Yes:
+        if message_box.exec() == QtWidgets.QMessageBox.StandardButton.Yes:
             function()
 
 

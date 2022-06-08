@@ -137,7 +137,7 @@ class RenamingCompatOptionsPage(OptionsPage):
                 ),
                 QtWidgets.QMessageBox.StandardButton.Ok,
                 self)
-            dialog.exec_()
+            dialog.exec()
 
     def on_options_changed(self):
         self.options_changed.emit(self.get_options())
@@ -154,7 +154,7 @@ class RenamingCompatOptionsPage(OptionsPage):
 
     def open_win_compat_dialog(self):
         dialog = WinCompatDialog(self.win_compat_replacements, parent=self)
-        if dialog.exec_() == QtWidgets.QDialog.DialogCode.Accepted:
+        if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
             self.win_compat_replacements = dialog.replacements
             self.on_options_changed()
 

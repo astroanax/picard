@@ -130,5 +130,5 @@ def crash_handler():
     msgbox.setDetailedText(trace)
     msgbox.setStandardButtons(QMessageBox.StandardButton.Close)
     msgbox.setDefaultButton(QMessageBox.StandardButton.Close)
-    msgbox.exec_()
+    msgbox.exec()
     app.quit()
