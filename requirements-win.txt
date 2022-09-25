@@ -3,6 +3,6 @@ discid==1.2.0
 markdown==3.4.1
 mutagen==1.46.0
 PyJWT==2.6.0
-PyQt6==6.3.0
+PyQt6==6.3.1
 pywin32==305
 pyyaml==6.0

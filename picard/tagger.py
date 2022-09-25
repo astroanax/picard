@@ -150,6 +150,8 @@ from picard.webservice.api_helpers import (
     MBAPIHelper,
 )
 
+import picard.resources  # noqa: F401 # pylint: disable=unused-import
+
 from picard.ui import theme
 from picard.ui.mainwindow import MainWindow
 from picard.ui.searchdialog.album import AlbumSearchDialog
