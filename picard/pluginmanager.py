@@ -352,7 +352,7 @@ class PluginManager(QtCore.QObject):
             os.fsync(zipfile.fileno())
             try:
                 os.link(zipfile.name, dst)
-            except OSError:
+            except (OSError, AttributeError):
                 with open(dst, 'wb') as dstfile:
                     zipfile.seek(0)
                     shutil.copyfileobj(zipfile, dstfile)
