@@ -4,9 +4,9 @@
 #
 # Copyright (C) 2007 Lukáš Lalinský
 # Copyright (C) 2009 Carlin Mangar
-# Copyright (C) 2009, 2018-2022 Philipp Wolfer
+# Copyright (C) 2009, 2018-2023 Philipp Wolfer
 # Copyright (C) 2011-2013 Michael Wiencek
-# Copyright (C) 2013, 2015, 2018-2021 Laurent Monin
+# Copyright (C) 2013, 2015, 2018-2022 Laurent Monin
 # Copyright (C) 2013, 2017 Sophist-UK
 # Copyright (C) 2014 Shadab Zafar
 # Copyright (C) 2015, 2017 Wieland Hoffmann
@@ -14,6 +14,7 @@
 # Copyright (C) 2017 Suhas
 # Copyright (C) 2018 Vishal Choudhary
 # Copyright (C) 2018 yagyanshbhatia
+# Copyright (C) 2023 tuspar
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -605,6 +606,7 @@ class PluginsOptionsPage(OptionsPage):
             (_("Authors"), self.link_authors(plugin.author)),
             (_("License"), plugin.license),
             (_("Files"), escape(plugin.files_list)),
+            (_("User Guide"), self.link_user_guide(plugin.user_guide_url)),
         ]
         for label, value in infos:
             if value:
@@ -628,6 +630,14 @@ class PluginsOptionsPage(OptionsPage):
                 formatted_authors.append(escape(author))
         return ', '.join(formatted_authors)
 
+    @staticmethod
+    def link_user_guide(user_guide):
+        if user_guide:
+            user_guide = '<a href="{url}">{url}</a>'.format(
+                url=escape(user_guide)
+            )
+        return user_guide
+
     def change_details(self):
         item = self.selected_item()
         if item:
@@ -647,15 +657,13 @@ class PluginsOptionsPage(OptionsPage):
     def download_plugin(self, item, update=False):
         plugin = item.plugin
 
-        self.tagger.webservice.get(
-            PLUGINS_API['host'],
-            PLUGINS_API['port'],
-            PLUGINS_API['endpoint']['download'],
-            partial(self.download_handler, update, plugin=plugin),
+        self.tagger.webservice.get_url(
+            url=PLUGINS_API['urls']['download'],
+            handler=partial(self.download_handler, update, plugin=plugin),
             parse_response_type=None,
             priority=True,
             important=True,
-            queryargs={"id": plugin.module_name, "version": plugin.version.to_string(short=True)}
+            unencoded_queryargs={"id": plugin.module_name, "version": plugin.version.to_string(short=True)},
         )
 
     def download_handler(self, update, response, reply, error, plugin):
@@ -668,7 +676,7 @@ class PluginsOptionsPage(OptionsPage):
             msgbox.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
             msgbox.setDefaultButton(QtWidgets.QMessageBox.StandardButton.Ok)
             msgbox.exec_()
-            log.error("Error occurred while trying to download the plugin: '%s'" % plugin.module_name)
+            log.error("Error occurred while trying to download the plugin: '%s'", plugin.module_name)
             return
 
         self.manager.install_plugin(

@@ -12,7 +12,7 @@
 # Copyright (C) 2012, 2014-2015 Wieland Hoffmann
 # Copyright (C) 2013 Ionuț Ciocîrlan
 # Copyright (C) 2013-2014 Sophist-UK
-# Copyright (C) 2013-2014, 2018-2021 Laurent Monin
+# Copyright (C) 2013-2014, 2018-2022 Laurent Monin
 # Copyright (C) 2014 Johannes Dewender
 # Copyright (C) 2016 Rahul Raturi
 # Copyright (C) 2016 barami
@@ -23,6 +23,8 @@
 # Copyright (C) 2020 Ray Bouchard
 # Copyright (C) 2021 Gabriel Ferreira
 # Copyright (C) 2021 Louis Sautier
+# Copyright (C) 2022 Kamil
+# Copyright (C) 2022 skelly37
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -674,6 +676,17 @@ def album_artist_from_path(filename, album, artist):
     return album, artist
 
 
+def encoded_queryargs(queryargs):
+    """
+    Percent-encode all values from passed dictionary
+    Keys are left unmodified
+    """
+    return {
+        name: bytes(QtCore.QUrl.toPercentEncoding(str(value))).decode()
+        for name, value in queryargs.items()
+    }
+
+
 def build_qurl(host, port=80, path=None, queryargs=None):
     """
     Builds and returns a QUrl object from `host`, `port` and `path` and
@@ -893,6 +906,10 @@ def limited_join(a_list, limit, join_string='+', middle_string='…'):
     start = a_list[:half]
     end = a_list[-half:]
     return join_string.join(start + [middle_string] + end)
+
+
+def countries_shortlist(countries):
+    return limited_join(countries, 6, '+', '…')
 
 
 def extract_year_from_date(dt):

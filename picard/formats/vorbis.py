@@ -4,14 +4,15 @@
 #
 # Copyright (C) 2006-2008, 2012 Lukáš Lalinský
 # Copyright (C) 2008 Hendrik van Antwerpen
-# Copyright (C) 2008-2010, 2014-2015, 2018-2022 Philipp Wolfer
+# Copyright (C) 2008-2010, 2014-2015, 2018-2023 Philipp Wolfer
 # Copyright (C) 2012-2013 Michael Wiencek
 # Copyright (C) 2012-2014 Wieland Hoffmann
 # Copyright (C) 2013 Calvin Walton
-# Copyright (C) 2013-2014, 2017-2022 Laurent Monin
+# Copyright (C) 2013-2014, 2017-2023 Laurent Monin
 # Copyright (C) 2016-2018 Sambhav Kothari
 # Copyright (C) 2017 Ville Skyttä
 # Copyright (C) 2022 Marcin Szalowicz
+# Copyright (C) 2023 certuna
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -137,8 +138,9 @@ class VCommentFile(File):
         metadata = Metadata()
         for origname, values in file.tags.items():
             for value in values:
+                value = value.rstrip('\0')
                 name = origname
-                if name == "date" or name == "originaldate":
+                if name in {'date', 'originaldate', 'releasedate'}:
                     # YYYY-00-00 => YYYY
                     value = sanitize_date(value)
                 elif name == 'performer' or name == 'comment':
@@ -192,7 +194,7 @@ class VCommentFile(File):
                             id3_type=image.type
                         )
                     except (CoverArtImageError, TypeError, ValueError, mutagen.flac.error) as e:
-                        log.error('Cannot load image from %r: %s' % (filename, e))
+                        log.error('Cannot load image from %r: %s', filename, e)
                     else:
                         metadata.images.append(coverartimage)
                     continue
@@ -212,7 +214,7 @@ class VCommentFile(File):
                         id3_type=image.type
                     )
                 except CoverArtImageError as e:
-                    log.error('Cannot load image from %r: %s' % (filename, e))
+                    log.error('Cannot load image from %r: %s', filename, e)
                 else:
                     metadata.images.append(coverartimage)
 
@@ -227,7 +229,7 @@ class VCommentFile(File):
                             data=base64.standard_b64decode(data)
                         )
                     except (CoverArtImageError, TypeError, ValueError) as e:
-                        log.error('Cannot load image from %r: %s' % (filename, e))
+                        log.error('Cannot load image from %r: %s', filename, e)
                     else:
                         metadata.images.append(coverartimage)
             except KeyError:
@@ -276,7 +278,7 @@ class VCommentFile(File):
                 continue
             elif name.startswith('lyrics:'):
                 name = 'lyrics'
-            elif name == "date" or name == "originaldate":
+            elif name in {'date', 'originaldate', 'releasedate'}:
                 # YYYY-00-00 => YYYY
                 value = sanitize_date(value)
             elif name.startswith('performer:') or name.startswith('comment:'):
@@ -289,7 +291,7 @@ class VCommentFile(File):
                 value = "MusicMagic Fingerprint%s" % value
             elif name in self.__rtranslate:
                 name = self.__rtranslate[name]
-            tags.setdefault(name.upper(), []).append(value)
+            tags.setdefault(name.upper(), []).append(value.rstrip('\0'))
 
         if "totaltracks" in metadata:
             tags.setdefault("TRACKTOTAL", []).append(metadata["totaltracks"])
@@ -322,14 +324,13 @@ class VCommentFile(File):
 
         self._remove_deleted_tags(metadata, file.tags)
 
+        kwargs = {}
         if is_flac:
             flac_sort_pics_after_tags(file.metadata_blocks)
             if config.setting["fix_missing_seekpoints_flac"]:
                 flac_remove_empty_seektable(file)
-
-        kwargs = {}
-        if is_flac and config.setting["remove_id3_from_flac"]:
-            kwargs["deleteid3"] = True
+            if config.setting["remove_id3_from_flac"]:
+                kwargs["deleteid3"] = True
         try:
             file.save(**kwargs)
         except TypeError:

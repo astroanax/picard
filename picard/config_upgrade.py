@@ -3,14 +3,14 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2013-2014 Michael Wiencek
-# Copyright (C) 2013-2016, 2018-2021 Laurent Monin
+# Copyright (C) 2013-2016, 2018-2022 Laurent Monin
 # Copyright (C) 2014, 2017 Lukáš Lalinský
-# Copyright (C) 2014, 2018-2022 Philipp Wolfer
+# Copyright (C) 2014, 2018-2023 Philipp Wolfer
 # Copyright (C) 2015 Ohm Patel
 # Copyright (C) 2016 Suhas
 # Copyright (C) 2016-2017 Sambhav Kothari
-# Copyright (C) 2021 Bob Swift
 # Copyright (C) 2021 Gabriel Ferreira
+# Copyright (C) 2021, 2023 Bob Swift
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -306,7 +306,9 @@ def upgrade_to_v2_4_0_beta_3(config):
     """Convert preserved tags to list"""
     _s = config.setting
     opt = 'preserved_tags'
-    _s[opt] = [t.strip() for t in _s.raw_value(opt, qtype='QString').split(',')]
+    value = _s.raw_value(opt, qtype='QString')
+    if not isinstance(value, list):
+        _s[opt] = [t.strip() for t in value.split(',')]
 
 
 def upgrade_to_v2_5_0_dev_1(config):
@@ -457,6 +459,15 @@ def upgrade_to_v2_8_0_dev_2(config):
         pass
 
 
+def upgrade_to_v2_9_0_alpha_2(config):
+    """Add preset file naming scripts to editable user scripts disctionary"""
+    from picard.script import get_file_naming_script_presets
+    scripts = config.setting["file_renaming_scripts"]
+    for item in get_file_naming_script_presets():
+        scripts[item["id"]] = item.to_dict()
+    config.setting["file_renaming_scripts"] = scripts
+
+
 def rename_option(config, old_opt, new_opt, option_type, default):
     _s = config.setting
     if old_opt in _s:
@@ -501,4 +512,5 @@ def upgrade_config(config):
     cfg.register_upgrade_hook(upgrade_to_v2_7_0_dev_4)
     cfg.register_upgrade_hook(upgrade_to_v2_7_0_dev_5)
     cfg.register_upgrade_hook(upgrade_to_v2_8_0_dev_2)
+    cfg.register_upgrade_hook(upgrade_to_v2_9_0_alpha_2)
     cfg.run_upgrade_hooks(log.debug)

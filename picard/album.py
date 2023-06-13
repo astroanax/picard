@@ -7,7 +7,7 @@
 # Copyright (C) 2008 Gary van der Merwe
 # Copyright (C) 2008 Hendrik van Antwerpen
 # Copyright (C) 2008 ojnkpjg
-# Copyright (C) 2008-2011, 2014, 2018-2022 Philipp Wolfer
+# Copyright (C) 2008-2011, 2014, 2018-2023 Philipp Wolfer
 # Copyright (C) 2009 Nikolai Prokoschenko
 # Copyright (C) 2011-2012 Chad Wilson
 # Copyright (C) 2011-2013, 2019 Michael Wiencek
@@ -304,8 +304,8 @@ class Album(DataObject, Item):
                     parse_result = self._parse_release(document)
                     config = get_config()
                     if parse_result == ParseResult.MISSING_TRACK_RELS:
-                        log.debug('Recording relationships not loaded in initial request for %r, issuing separate requests' % self)
-                        self._request_recording_relationships(config=config)
+                        log.debug('Recording relationships not loaded in initial request for %r, issuing separate requests', self)
+                        self._request_recording_relationships()
                     elif parse_result == ParseResult.PARSED:
                         self._run_album_metadata_processors()
                     elif parse_result == ParseResult.REDIRECT:
@@ -318,9 +318,7 @@ class Album(DataObject, Item):
             if parse_result == ParseResult.PARSED or error:
                 self._finalize_loading(error)
 
-    def _request_recording_relationships(self, offset=0, limit=RECORDING_QUERY_LIMIT, config=None):
-        if not config:
-            config = get_config()
+    def _request_recording_relationships(self, offset=0, limit=RECORDING_QUERY_LIMIT):
         inc = (
             'artist-rels',
             'recording-rels',
@@ -329,14 +327,14 @@ class Album(DataObject, Item):
             'work-rels',
             'work-level-rels',
         )
-        log.debug('Loading recording relationships for %r (offset=%i, limit=%i)' % (self, offset, limit))
+        log.debug('Loading recording relationships for %r (offset=%i, limit=%i)', self, offset, limit)
         self._requests += 1
         self.load_task = self.tagger.mb_api.browse_recordings(
             self._recordings_request_finished,
             inc=inc,
             release=self.id,
             limit=limit,
-            offset=offset
+            offset=offset,
         )
 
     def _recordings_request_finished(self, document, http, error):
@@ -435,9 +433,9 @@ class Album(DataObject, Item):
             mm = Metadata()
             mm.copy(self._new_metadata)
             medium_to_metadata(medium_node, mm)
-            format = medium_node.get('format')
-            if format:
-                all_media.append(format)
+            fmt = medium_node.get('format')
+            if fmt:
+                all_media.append(fmt)
 
             for dj in djmix_ars.get(mm["discnumber"], []):
                 mm.add("djmixer", dj)
@@ -609,9 +607,11 @@ class Album(DataObject, Item):
             inc |= {
                 'artist-rels',
                 'recording-rels',
+                'release-group-level-rels',
                 'release-rels',
+                'series-rels',
                 'url-rels',
-                'work-rels'
+                'work-rels',
             }
             if config.setting['track_ars']:
                 inc |= {
@@ -626,7 +626,7 @@ class Album(DataObject, Item):
         self.load_task = self.tagger.mb_api.get_release_by_id(
             self.id,
             self._release_request_finished,
-            inc=tuple(inc),
+            inc=inc,
             mblogin=require_authentication,
             priority=priority,
             refresh=refresh

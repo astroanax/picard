@@ -6,9 +6,10 @@
 # Copyright (C) 2014 Sophist-UK
 # Copyright (C) 2016-2017 Sambhav Kothari
 # Copyright (C) 2017 Wieland Hoffmann
-# Copyright (C) 2017-2018, 2020-2021 Laurent Monin
+# Copyright (C) 2017-2018, 2020-2022 Laurent Monin
 # Copyright (C) 2018 Vishal Choudhary
 # Copyright (C) 2019-2022 Philipp Wolfer
+# Copyright (C) 2023 certuna
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -64,7 +65,7 @@ class TagEditorDelegate(QtWidgets.QItemDelegate):
         else:
             editor = super().createEditor(parent, option, index)
         completer = None
-        if tag in {'date', 'originaldate'}:
+        if tag in {'date', 'originaldate', 'releasedate'}:
             editor.setPlaceholderText(_('YYYY-MM-DD'))
         elif tag == 'originalyear':
             editor.setPlaceholderText(_('YYYY'))

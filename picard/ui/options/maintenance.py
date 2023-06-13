@@ -3,8 +3,8 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2021-2022 Bob Swift
-# Copyright (C) 2021 Laurent Monin
-# Copyright (C) 2021-2022 Philipp Wolfer
+# Copyright (C) 2021-2022 Laurent Monin
+# Copyright (C) 2021-2023 Philipp Wolfer
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -248,7 +248,7 @@ class MaintenanceOptionsPage(OptionsPage):
         filename, file_type = QtWidgets.QFileDialog.getOpenFileName(self, dialog_title, directory, dialog_file_types, options=options)
         if not filename:
             return
-        log.warning('Loading configuration from %s' % filename)
+        log.warning('Loading configuration from %s', filename)
         if load_new_config(filename):
             config = get_config()
             upgrade_config(config)

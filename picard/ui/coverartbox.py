@@ -4,11 +4,11 @@
 #
 # Copyright (C) 2006-2007, 2011 Lukáš Lalinský
 # Copyright (C) 2009 Carlin Mangar
-# Copyright (C) 2009, 2018-2022 Philipp Wolfer
+# Copyright (C) 2009, 2018-2023 Philipp Wolfer
 # Copyright (C) 2011-2013 Michael Wiencek
 # Copyright (C) 2012 Chad Wilson
 # Copyright (C) 2012-2014 Wieland Hoffmann
-# Copyright (C) 2013-2014, 2017-2021 Laurent Monin
+# Copyright (C) 2013-2014, 2017-2022 Laurent Monin
 # Copyright (C) 2014 Francois Ferrand
 # Copyright (C) 2015 Sophist-UK
 # Copyright (C) 2016 Ville Skyttä
@@ -465,20 +465,12 @@ class CoverArtBox(QtWidgets.QGroupBox):
             self.load_remote_image(url, fallback_data)
 
         if url.scheme() in {'http', 'https'}:
-            path = url.path()
-            if url.hasQuery():
-                query = QtCore.QUrlQuery(url.query())
-                queryargs = dict(query.queryItems())
-            else:
-                queryargs = {}
-            if url.scheme() == 'https':
-                port = 443
-            else:
-                port = 80
-            self.tagger.webservice.get(url.host(), url.port(port), path,
-                                       partial(self.on_remote_image_fetched, url, fallback_data=fallback_data),
-                                       parse_response_type=None, queryargs=queryargs,
-                                       priority=True, important=True)
+            self.tagger.webservice.download_url(
+                url=url,
+                handler=partial(self.on_remote_image_fetched, url, fallback_data=fallback_data),
+                priority=True,
+                important=True,
+            )
         elif url.scheme() == 'file':
             path = normpath(url.toLocalFile().rstrip("\0"))
             if path and os.path.exists(path):
@@ -528,7 +520,7 @@ class CoverArtBox(QtWidgets.QGroupBox):
             self._try_load_remote_image(url, data)
             return
         except CoverArtImageError as e:
-            log.debug("Unable to identify dropped data format: %s" % e)
+            log.debug("Unable to identify dropped data format: %s", e)
 
         # Try getting image out of HTML (e.g. for Google image search detail view)
         try:
@@ -537,7 +529,7 @@ class CoverArtBox(QtWidgets.QGroupBox):
             if match:
                 url = QtCore.QUrl(match.group(1))
         except UnicodeDecodeError as e:
-            log.warning("Unable to decode dropped data format: %s" % e)
+            log.warning("Unable to decode dropped data format: %s", e)
         else:
             log.debug("Trying URL parsed from HTML: %s", url.toString())
             self.fetch_remote_image(url)
@@ -546,7 +538,7 @@ class CoverArtBox(QtWidgets.QGroupBox):
         try:
             self._try_load_remote_image(url, data)
         except CoverArtImageError as e:
-            log.warning("Can't load image: %s" % e)
+            log.warning("Can't load image: %s", e)
             return
 
     def _try_load_remote_image(self, url, data):

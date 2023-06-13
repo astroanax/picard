@@ -3,7 +3,7 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2006 Lukáš Lalinský
-# Copyright (C) 2019-2021 Philipp Wolfer
+# Copyright (C) 2019-2021, 2023 Philipp Wolfer
 # Copyright (C) 2021 Laurent Monin
 #
 # This program is free software; you can redistribute it and/or
@@ -49,8 +49,8 @@ class TagsCompatibilityID3OptionsPage(OptionsPage):
 
     options = [
         BoolOption("setting", "write_id3v1", True),
-        BoolOption("setting", "write_id3v23", True),
-        TextOption("setting", "id3v2_encoding", "utf-16"),
+        BoolOption("setting", "write_id3v23", False),
+        TextOption("setting", "id3v2_encoding", "utf-8"),
         TextOption("setting", "id3v23_join_with", "/"),
         BoolOption("setting", "itunes_compatible_grouping", False),
     ]

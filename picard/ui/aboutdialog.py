@@ -3,11 +3,11 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2006-2014 Lukáš Lalinský
-# Copyright (C) 2008, 2013, 2018-2022 Philipp Wolfer
+# Copyright (C) 2008, 2013, 2018-2023 Philipp Wolfer
 # Copyright (C) 2011 Pavan Chander
 # Copyright (C) 2011, 2013 Wieland Hoffmann
 # Copyright (C) 2013 Michael Wiencek
-# Copyright (C) 2013-2015, 2018, 2020-2021 Laurent Monin
+# Copyright (C) 2013-2015, 2018, 2020-2022 Laurent Monin
 # Copyright (C) 2014 Ismael Olea
 # Copyright (C) 2017 Sambhav Kothari
 # Copyright (C) 2021 Bob Swift
@@ -61,7 +61,7 @@ class AboutDialog(PicardDialog, SingletonDialog):
             if name != 'version'])
 
         args['formats'] = ", ".join(map(lambda x: x[1:], supported_extensions()))
-        args['copyright_years'] = '2004-2022'
+        args['copyright_years'] = '2004-2023'
         args['authors_credits'] = ", ".join([
             'Robert Kaye',
             'Lukáš Lalinský',

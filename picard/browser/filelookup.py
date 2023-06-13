@@ -12,7 +12,7 @@
 # Copyright (C) 2015-2016 Wieland Hoffmann
 # Copyright (C) 2016 Rahul Raturi
 # Copyright (C) 2016-2017 Sambhav Kothari
-# Copyright (C) 2020, 2022 Philipp Wolfer
+# Copyright (C) 2020, 2022-2023 Philipp Wolfer
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -77,7 +77,7 @@ class FileLookup(object):
         return self.launch(self._url(path, params))
 
     def launch(self, url):
-        log.debug("webbrowser2: %s" % url)
+        log.debug("webbrowser2: %s", url)
         webbrowser2.open(url)
         return True
 

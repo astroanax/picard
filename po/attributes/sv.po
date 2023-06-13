@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: MusicBrainz\n"
 "PO-Revision-Date: 2012-05-24 18:52+0000\n"
 "Last-Translator: Tom Sawyer, 2022\n"
-"Language-Team: Swedish (http://www.transifex.com/musicbrainz/musicbrainz/language/sv/)\n"
+"Language-Team: Swedish (http://app.transifex.com/musicbrainz/musicbrainz/language/sv/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -271,6 +271,11 @@ msgid ""
 "America, so that they would fit existing vinyl racks in stores."
 msgstr ""
 
+#: DB:place_type/description:43
+msgctxt "place_type"
+msgid "A large, permanent outdoor stage, typically with a fixed seating area."
+msgstr ""
+
 #: DB:work_attribute_type_allowed_value/value:28
 msgctxt "work_attribute_type_allowed_value"
 msgid "A major"
@@ -521,6 +526,13 @@ msgctxt "series_type"
 msgid "A series of works."
 msgstr "En serie verk."
 
+#: DB:place_type/description:42
+msgctxt "place_type"
+msgid ""
+"A small venue (such as a jazz club, nightclub or pub) that hosts concerts "
+"and social events. May or may not have a dedicated stage or seating."
+msgstr ""
+
 #: DB:work_type/description:15
 msgctxt "work_type"
 msgid ""
@@ -582,6 +594,13 @@ msgctxt "work_type"
 msgid ""
 "A symphony is an extended composition, almost always scored for orchestra "
 "without soloists."
+msgstr ""
+
+#: DB:place_type/description:45
+msgctxt "place_type"
+msgid ""
+"A temporary outdoor stage erected for a music festival or other similar "
+"event."
 msgstr ""
 
 #: DB:release_packaging/description:2
@@ -812,6 +831,11 @@ msgctxt "work_attribute_type_allowed_value"
 msgid "Ambikā"
 msgstr ""
 
+#: DB:place_type/name:43
+msgctxt "place_type"
+msgid "Amphitheatre"
+msgstr ""
+
 #: DB:work_attribute_type_allowed_value/value:855
 msgctxt "work_attribute_type_allowed_value"
 msgid "Amr̥t varṣiṇi"
@@ -909,6 +933,13 @@ msgctxt "event_type"
 msgid ""
 "An individual concert by a single artist or collaboration, often with "
 "supporting artists who perform before the main act."
+msgstr ""
+
+#: DB:place_type/description:44
+msgctxt "place_type"
+msgid ""
+"An indoor performance facility with fixed seating, whether for music "
+"(usually, but not always, classical music) or theatre."
 msgstr ""
 
 #: DB:release_group_secondary_type/description:4
@@ -1907,6 +1938,11 @@ msgctxt "release_packaging"
 msgid "Clamshell Case"
 msgstr ""
 
+#: DB:place_type/name:42
+msgctxt "place_type"
+msgid "Club"
+msgstr ""
+
 #: DB:release_group_secondary_type/name:1
 msgctxt "release_group_secondary_type"
 msgid "Compilation"
@@ -1916,6 +1952,11 @@ msgstr "Samlingsalbum"
 msgctxt "event_type"
 msgid "Concert"
 msgstr "Konsert"
+
+#: DB:place_type/name:44
+msgctxt "place_type"
+msgid "Concert hall / Theatre"
+msgstr ""
 
 #: DB:work_type/name:4
 msgctxt "work_type"
@@ -2287,6 +2328,11 @@ msgstr ""
 #: DB:release_packaging/name:17
 msgctxt "release_packaging"
 msgid "Digibook"
+msgstr ""
+
+#: DB:release_packaging/name:89
+msgctxt "release_packaging"
+msgid "Digifile"
 msgstr ""
 
 #: DB:release_packaging/name:3
@@ -2804,6 +2850,11 @@ msgstr "Festival"
 msgctxt "series_type"
 msgid "Festival"
 msgstr "Festival"
+
+#: DB:place_type/name:45
+msgctxt "place_type"
+msgid "Festival stage"
+msgstr ""
 
 #: DB:work_attribute_type_allowed_value/value:372
 msgctxt "work_attribute_type_allowed_value"
@@ -3758,6 +3809,11 @@ msgctxt "work_attribute_type"
 msgid "ID for the Singaporean rights society COMPASS"
 msgstr ""
 
+#: DB:work_attribute_type/description:140
+msgctxt "work_attribute_type"
+msgid "ID for the Slovenian rights society SAZAS"
+msgstr ""
+
 #: DB:work_attribute_type/description:68
 msgctxt "work_attribute_type"
 msgid "ID for the South African rights society SAMRO"
@@ -3821,6 +3877,11 @@ msgstr ""
 #: DB:work_attribute_type/description:42
 msgctxt "work_attribute_type"
 msgid "ID for the Venezuelan rights society SACVEN"
+msgstr ""
+
+#: DB:work_attribute_type/description:107
+msgctxt "work_attribute_type"
+msgid "ID for the Vietnamese rights society VCPMC"
 msgstr ""
 
 #: DB:work_attribute_type/description:38
@@ -5689,6 +5750,11 @@ msgctxt "collection_type"
 msgid "Owned music"
 msgstr "Ägd musik"
 
+#: DB:editor_collection_type/name:17
+msgctxt "collection_type"
+msgid "Owned recordings"
+msgstr ""
+
 #: DB:work_attribute_type_allowed_value/value:762
 msgctxt "work_attribute_type_allowed_value"
 msgid "Oynak"
@@ -6377,6 +6443,11 @@ msgstr ""
 #: DB:work_attribute_type/name:39
 msgctxt "work_attribute_type"
 msgid "SAYCO ID"
+msgstr ""
+
+#: DB:work_attribute_type/name:140
+msgctxt "work_attribute_type"
+msgid "SAZAS ID"
 msgstr ""
 
 #: DB:medium_format/name:62
@@ -7557,6 +7628,11 @@ msgstr ""
 msgctxt "medium_format"
 msgid "VCD"
 msgstr "VCD"
+
+#: DB:work_attribute_type/name:107
+msgctxt "work_attribute_type"
+msgid "VCPMC ID"
+msgstr ""
 
 #: DB:medium_format/name:59
 msgctxt "medium_format"

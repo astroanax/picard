@@ -6,7 +6,7 @@
 # Copyright (C) 2014 Shadab Zafar
 # Copyright (C) 2015-2021 Laurent Monin
 # Copyright (C) 2019 Wieland Hoffmann
-# Copyright (C) 2019-2020 Philipp Wolfer
+# Copyright (C) 2019-2020, 2022-2023 Philipp Wolfer
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -397,7 +397,7 @@ class PluginManager(QtCore.QObject):
                 elif os.path.isdir(path):
                     self._install_plugin_dir(plugin_name, path, update=update)
             except OSError as why:
-                log.error("Unable to copy plugin '%s' to %r: %s" % (plugin_name, self.plugins_directory, why))
+                log.error("Unable to copy plugin '%s' to %r: %s", plugin_name, self.plugins_directory, why)
                 return
 
             if not update:
@@ -414,13 +414,11 @@ class PluginManager(QtCore.QObject):
                 self.plugin_updated.emit(plugin_name, False)
 
     def query_available_plugins(self, callback=None):
-        self.tagger.webservice.get(
-            PLUGINS_API['host'],
-            PLUGINS_API['port'],
-            PLUGINS_API['endpoint']['plugins'],
-            partial(self._plugins_json_loaded, callback=callback),
+        self.tagger.webservice.get_url(
+            url=PLUGINS_API['urls']['plugins'],
+            handler=partial(self._plugins_json_loaded, callback=callback),
             priority=True,
-            important=True
+            important=True,
         )
 
     def is_available(self, plugin_name):

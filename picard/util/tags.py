@@ -12,6 +12,7 @@
 # Copyright (C) 2013-2015, 2017 Sophist-UK
 # Copyright (C) 2019 Zenara Daley
 # Copyright (C) 2023 Bob Swift
+# Copyright (C) 2023 certuna
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -103,6 +104,7 @@ TAG_NAMES = {
     'r128_track_gain': N_('R128 Track Gain'),
     '~rating': N_('Rating'),
     'releasecountry': N_('Release Country'),
+    'releasedate': N_('Release Date'),
     'releasestatus': N_('Release Status'),
     'releasetype': N_('Release Type'),
     'remixer': N_('Remixer'),

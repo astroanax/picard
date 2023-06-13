@@ -4,7 +4,7 @@
 #
 # Copyright (C) 2007-2008 Lukáš Lalinský
 # Copyright (C) 2009 Carlin Mangar
-# Copyright (C) 2009, 2014, 2017-2021 Philipp Wolfer
+# Copyright (C) 2009, 2014, 2017-2021, 2023 Philipp Wolfer
 # Copyright (C) 2011 johnny64
 # Copyright (C) 2011-2013 Michael Wiencek
 # Copyright (C) 2013 Sebastian Ramacher
@@ -17,6 +17,7 @@
 # Copyright (C) 2016-2018 Sambhav Kothari
 # Copyright (C) 2017 Frederik “Freso” S. Olesen
 # Copyright (C) 2018 Vishal Choudhary
+# Copyright (C) 2023 tuspar
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -78,7 +79,7 @@ class ExtensionPoint(object):
     def register(self, module, item):
         if module.startswith(_PLUGIN_MODULE_PREFIX):
             name = module[_PLUGIN_MODULE_PREFIX_LEN:]
-            log.debug("ExtensionPoint: %s register <- plugin=%r item=%r" % (self.label, name, item))
+            log.debug("ExtensionPoint: %s register <- plugin=%r item=%r", self.label, name, item)
         else:
             name = None
             # uncomment to debug internal extensions loaded at startup
@@ -183,6 +184,13 @@ class PluginWrapper(PluginShared):
     def license_url(self):
         try:
             return self.data['PLUGIN_LICENSE_URL']
+        except KeyError:
+            return ""
+
+    @property
+    def user_guide_url(self):
+        try:
+            return self.data['PLUGIN_USER_GUIDE_URL']
         except KeyError:
             return ""
 

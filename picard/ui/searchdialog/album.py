@@ -3,7 +3,7 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2016 Rahul Raturi
-# Copyright (C) 2018-2021 Laurent Monin
+# Copyright (C) 2018-2022 Laurent Monin
 # Copyright (C) 2018-2022 Philipp Wolfer
 #
 # This program is free software; you can redistribute it and/or
@@ -35,11 +35,7 @@ from picard.config import (
     Option,
     get_config,
 )
-from picard.const import (
-    CAA_HOST,
-    CAA_PORT,
-)
-from picard.coverart.image import CaaThumbnailCoverArtImage
+from picard.const import CAA_URL
 from picard.mbjson import (
     countries_from_node,
     media_formats_from_node,
@@ -47,6 +43,7 @@ from picard.mbjson import (
     release_to_metadata,
 )
 from picard.metadata import Metadata
+from picard.util import countries_shortlist
 from picard.webservice.api_helpers import build_lucene_query
 
 from picard.ui.searchdialog import (
@@ -248,12 +245,10 @@ class AlbumSearchDialog(SearchDialog):
         if not cell.is_visible():
             return
         cell.fetched = True
-        caa_path = "/release/%s" % cell.release["musicbrainz_albumid"]
-        cell.fetch_task = self.tagger.webservice.get(
-            CAA_HOST,
-            CAA_PORT,
-            caa_path,
-            partial(self._caa_json_downloaded, cell)
+        mbid = cell.release["musicbrainz_albumid"]
+        cell.fetch_task = self.tagger.webservice.get_url(
+            url=f'{CAA_URL}/release/{mbid}',
+            handler=partial(self._caa_json_downloaded, cell),
         )
 
     def _caa_json_downloaded(self, cover_cell, data, http, error):
@@ -275,13 +270,9 @@ class AlbumSearchDialog(SearchDialog):
                     break
 
             if front:
-                url = front["thumbnails"]["small"]
-                coverartimage = CaaThumbnailCoverArtImage(url=url)
-                cover_cell.fetch_task = self.tagger.webservice.download(
-                    coverartimage.host,
-                    coverartimage.port,
-                    coverartimage.path,
-                    partial(self._cover_downloaded, cover_cell)
+                cover_cell.fetch_task = self.tagger.webservice.download_url(
+                    url=front["thumbnails"]["small"],
+                    handler=partial(self._cover_downloaded, cover_cell)
                 )
             else:
                 cover_cell.not_found()
@@ -335,7 +326,7 @@ class AlbumSearchDialog(SearchDialog):
                 release["tracks"] = node['track-count']
             countries = countries_from_node(node)
             if countries:
-                release["country"] = ", ".join(countries)
+                release["country"] = countries_shortlist(countries)
             self.search_results.append(release)
 
     def display_results(self):

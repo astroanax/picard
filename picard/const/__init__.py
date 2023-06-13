@@ -3,8 +3,8 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2007, 2014, 2016 Lukáš Lalinský
-# Copyright (C) 2014, 2019-2021 Philipp Wolfer
-# Copyright (C) 2014-2016, 2018-2021 Laurent Monin
+# Copyright (C) 2014, 2019-2022 Philipp Wolfer
+# Copyright (C) 2014-2016, 2018-2021, 2023 Laurent Monin
 # Copyright (C) 2015 Ohm Patel
 # Copyright (C) 2016 Rahul Raturi
 # Copyright (C) 2016 Wieland Hoffmann
@@ -53,8 +53,7 @@ CACHE_SIZE_IN_BYTES = 100*1000*1000
 
 # AcoustID client API key
 ACOUSTID_KEY = 'v8pQ6oyB'
-ACOUSTID_HOST = 'api.acoustid.org'
-ACOUSTID_PORT = 443
+ACOUSTID_URL = 'https://api.acoustid.org/v2'
 FPCALC_NAMES = ['fpcalc', 'pyfpcalc']
 DEFAULT_FPCALC_THREADS = 2
 
@@ -62,9 +61,8 @@ DEFAULT_FPCALC_THREADS = 2
 MUSICBRAINZ_OAUTH_CLIENT_ID = 'ACa9wsDX19cLp-AeEP-vVw'
 MUSICBRAINZ_OAUTH_CLIENT_SECRET = 'xIsvXbIuntaLuRRhzuazOA'
 
-# Cover art archive URL and port
-CAA_HOST = "coverartarchive.org"
-CAA_PORT = 443
+# Cover art archive URL
+CAA_URL = 'https://coverartarchive.org'
 
 # Prepare documentation URLs
 if PICARD_VERSION.identifier == 'final':
@@ -94,6 +92,11 @@ PICARD_URLS = {
 
 # Various Artists MBID
 VARIOUS_ARTISTS_ID = '89ad4ac3-39f7-470e-963a-56509c546377'
+
+# Artist alias types
+ALIAS_TYPE_ARTIST_NAME_ID = '894afba6-2816-3c24-8072-eadb66bd04bc'
+ALIAS_TYPE_LEGAL_NAME_ID = 'd4dcd0c0-b341-3612-a332-c0ce797b25cf'
+ALIAS_TYPE_SEARCH_HINT_ID = '1937e404-b981-3cb7-8151-4c86ebfc8d8e'
 
 # Special purpose track titles
 SILENCE_TRACK_TITLE = '[silence]'
@@ -139,14 +142,13 @@ MUSICBRAINZ_SERVERS = [
 ]
 
 # Plugins and Release Versions API
+PLUGINS_API_BASE_URL = 'https://picard.musicbrainz.org/api/v2/'
 PLUGINS_API = {
-    'host': 'picard.musicbrainz.org',
-    'port': 443,
-    'endpoint': {
-        'plugins': '/api/v2/plugins/',
-        'download': '/api/v2/download/',
-        'releases': '/api/v2/releases',
-    }
+    'urls': {
+        'plugins': PLUGINS_API_BASE_URL + 'plugins/',
+        'download': PLUGINS_API_BASE_URL + 'download/',
+        'releases': PLUGINS_API_BASE_URL + 'releases',
+    },
 }
 
 # Default query limit

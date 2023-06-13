@@ -3,7 +3,7 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2006-2009, 2011-2012 Lukáš Lalinský
-# Copyright (C) 2008-2011, 2014, 2018-2021 Philipp Wolfer
+# Copyright (C) 2008-2011, 2014, 2018-2021, 2023 Philipp Wolfer
 # Copyright (C) 2009 Carlin Mangar
 # Copyright (C) 2011-2012 Johannes Weißl
 # Copyright (C) 2011-2014 Michael Wiencek
@@ -16,6 +16,7 @@
 # Copyright (C) 2016-2018 Sambhav Kothari
 # Copyright (C) 2017 tungol
 # Copyright (C) 2019 Zenara Daley
+# Copyright (C) 2023 certuna
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -110,6 +111,7 @@ class ID3File(File):
         'TXXX:ALBUMARTISTSORT': 'TSO2',
         'TXXX:COMPOSERSORT': 'TSOC',
         'TXXX:mood': 'TMOO',
+        'TXXX:RELEASEDATE': 'TDRL',
     }
 
     __translate = {
@@ -137,6 +139,7 @@ class ID3File(File):
         'TPUB': 'label',
         'TDOR': 'originaldate',
         'TDRC': 'date',
+        'TDRL': 'releasedate',
         'TSSE': 'encodersettings',
         'TSOA': 'albumsort',
         'TSOP': 'artistsort',
@@ -349,7 +352,7 @@ class ID3File(File):
                         id3_type=frame.type,
                     )
                 except CoverArtImageError as e:
-                    log.error('Cannot load image from %r: %s' % (filename, e))
+                    log.error('Cannot load image from %r: %s', filename, e)
                 else:
                     metadata.images.append(coverartimage)
             elif frameid == 'POPM':
@@ -505,6 +508,8 @@ class ID3File(File):
                             tags.add(self.build_TXXX(encoding, 'mood', values))
                     # No need to care about the TMOO tag being added again as it is
                     # automatically deleted by Mutagen if id2v23 is selected
+                        if frameid == 'TDRL':
+                            tags.add(self.build_TXXX(encoding, 'RELEASEDATE', values))
                     tags.add(getattr(id3, frameid)(encoding=encoding, text=values))
                     if frameid == 'TSOA':
                         tags.delall('XSOA')

@@ -7,14 +7,14 @@
 # Copyright (C) 2008 Gary van der Merwe
 # Copyright (C) 2008 Robert Kaye
 # Copyright (C) 2008 Will
-# Copyright (C) 2008-2010, 2015, 2018-2022 Philipp Wolfer
+# Copyright (C) 2008-2010, 2015, 2018-2023 Philipp Wolfer
 # Copyright (C) 2009 Carlin Mangar
 # Copyright (C) 2009 David Hilton
 # Copyright (C) 2011-2012 Chad Wilson
 # Copyright (C) 2011-2013, 2015-2017 Wieland Hoffmann
 # Copyright (C) 2011-2014 Michael Wiencek
 # Copyright (C) 2013-2014, 2017 Sophist-UK
-# Copyright (C) 2013-2022 Laurent Monin
+# Copyright (C) 2013-2023 Laurent Monin
 # Copyright (C) 2015 Ohm Patel
 # Copyright (C) 2015 samithaj
 # Copyright (C) 2016 Rahul Raturi
@@ -25,7 +25,7 @@
 # Copyright (C) 2018 Kartik Ohri
 # Copyright (C) 2018 Vishal Choudhary
 # Copyright (C) 2018 virusMac
-# Copyright (C) 2018, 2021 Bob Swift
+# Copyright (C) 2018, 2021-2023 Bob Swift
 # Copyright (C) 2019 Timur Enikeev
 # Copyright (C) 2020-2021 Gabriel Ferreira
 # Copyright (C) 2021 Petit Minion
@@ -132,7 +132,6 @@ from picard.ui.passworddialog import (
 from picard.ui.scripteditor import (
     ScriptEditorDialog,
     ScriptEditorExamples,
-    user_script_title,
 )
 from picard.ui.searchdialog.album import AlbumSearchDialog
 from picard.ui.searchdialog.track import TrackSearchDialog
@@ -208,6 +207,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
         self.script_editor_dialog = None
         self.examples = None
 
+        self.check_and_repair_naming_scripts()
         self.check_and_repair_profiles()
 
         self.setupUi()
@@ -657,9 +657,21 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
         self.submit_file_as_release_action = action
 
     @MainWindowActions.add()
+    def _create_similar_items_search_action(self):
+        action = QtWidgets.QAction(icontheme.lookup('system-search'), _("Search for similar items..."), self)
+        action.setIconText(_("Similar items"))
+        action.setStatusTip(_("View similar releases or recordings and optionally choose a different one"))
+        action.setEnabled(False)
+        action.setShortcut(QtGui.QKeySequence(_("Ctrl+T")))
+        action.triggered.connect(self.show_similar_items_search)
+        self.similar_items_search_action = action
+
+    @MainWindowActions.add()
     def _create_album_search_action(self):
         action = QtWidgets.QAction(icontheme.lookup('system-search'), _("Search for similar albums..."), self)
         action.setStatusTip(_("View similar releases and optionally choose a different release"))
+        action.setEnabled(False)
+        action.setShortcut(QtGui.QKeySequence(_("Ctrl+T")))
         action.triggered.connect(self.show_more_albums)
         self.album_search_action = action
 
@@ -1038,7 +1050,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
         menu.addAction(self.analyze_action)
         menu.addAction(self.cluster_action)
         menu.addAction(self.browser_lookup_action)
-        menu.addAction(self.track_search_action)
+        menu.addAction(self.similar_items_search_action)
         menu.addAction(self.album_other_versions_action)
         menu.addSeparator()
         menu.addAction(self.generate_fingerprints_action)
@@ -1397,6 +1409,13 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
                 return obj
         return None
 
+    def show_similar_items_search(self):
+        obj = self.get_first_obj_with_type(Cluster)
+        if obj:
+            self.show_more_albums()
+        else:
+            self.show_more_tracks()
+
     def show_more_tracks(self):
         if not self.selected_objects:
             return
@@ -1404,7 +1423,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
         if isinstance(obj, Track) and obj.files:
             obj = obj.files[0]
         if not isinstance(obj, File):
-            log.debug('show_more_tracks expected a File, got %r' % obj)
+            log.debug('show_more_tracks expected a File, got %r', obj)
             return
         dialog = TrackSearchDialog(self, force_advanced_search=True)
         dialog.show_similar_tracks(obj)
@@ -1413,7 +1432,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
     def show_more_albums(self):
         obj = self.get_first_obj_with_type(Cluster)
         if not obj:
-            log.debug('show_more_albums expected a Cluster, got %r' % obj)
+            log.debug('show_more_albums expected a Cluster, got %r', obj)
             return
         dialog = AlbumSearchDialog(self, force_advanced_search=True)
         dialog.show_similar_albums(obj)
@@ -1522,6 +1541,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
         can_browser_lookup = bool(single and single.can_browser_lookup())
         is_file = bool(single and isinstance(single, (File, Track)))
         is_album = bool(single and isinstance(single, Album))
+        is_cluster = bool(single and isinstance(single, Cluster) and not single.special)
 
         if not self.selected_objects:
             have_objects = have_files = False
@@ -1572,7 +1592,9 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
             self.submit_file_as_release_action.setEnabled(have_files)
         files = self.get_selected_or_unmatched_files()
         self.tags_from_filenames_action.setEnabled(bool(files))
+        self.similar_items_search_action.setEnabled(is_file or is_cluster)
         self.track_search_action.setEnabled(is_file)
+        self.album_search_action.setEnabled(is_cluster)
         self.album_other_versions_action.setEnabled(is_album)
 
     def update_selection(self, objects=None, new_selection=True, drop_album_caches=False):
@@ -1746,14 +1768,14 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
         update_level = config.setting['update_level']
         today = datetime.date.today().toordinal()
         do_auto_update_check = check_for_updates and update_check_days > 0 and today >= last_update_check + update_check_days
-        log.debug('{check_status} start-up check for program updates.  Today: {today_date}, Last check: {last_check} (Check interval: {check_interval} days), Update level: {update_level} ({update_level_name})'.format(
-            check_status='Initiating' if do_auto_update_check else 'Skipping',
-            today_date=datetime.date.today(),
-            last_check=str(datetime.date.fromordinal(last_update_check)) if last_update_check > 0 else 'never',
-            check_interval=update_check_days,
-            update_level=update_level,
-            update_level_name=PROGRAM_UPDATE_LEVELS[update_level]['name'] if update_level in PROGRAM_UPDATE_LEVELS else 'unknown',
-        ))
+        log.debug('%(check_status)s start-up check for program updates.  Today: %(today_date)s, Last check: %(last_check)s (Check interval: %(check_interval)s days), Update level: %(update_level)s (%(update_level_name)s)', {
+            'check_status': 'Initiating' if do_auto_update_check else 'Skipping',
+            'today_date': datetime.date.today(),
+            'last_check': str(datetime.date.fromordinal(last_update_check)) if last_update_check > 0 else 'never',
+            'check_interval': update_check_days,
+            'update_level': update_level,
+            'update_level_name': PROGRAM_UPDATE_LEVELS[update_level]['name'] if update_level in PROGRAM_UPDATE_LEVELS else 'unknown',
+        })
         if do_auto_update_check:
             self.check_for_update(False)
 
@@ -1765,6 +1787,23 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
             callback=update_last_check_date
         )
 
+    def check_and_repair_naming_scripts(self):
+        """Check the 'file_renaming_scripts' config setting to ensure that the list of scripts
+        is not empty.  Check that the 'selected_file_naming_script_id' config setting points to
+        a valid file naming script.
+        """
+        config = get_config()
+        script_key = 'file_renaming_scripts'
+        if not config.setting[script_key]:
+            config.setting[script_key] = {
+                script['id']: script.to_dict()
+                for script in get_file_naming_script_presets()
+            }
+        naming_script_ids = list(config.setting[script_key])
+        script_id_key = 'selected_file_naming_script_id'
+        if config.setting[script_id_key] not in naming_script_ids:
+            config.setting[script_id_key] = naming_script_ids[0]
+
     def check_and_repair_profiles(self):
         """Check the profiles and profile settings and repair the values if required.
         Checks that there is a settings dictionary for each profile, and that no profiles
@@ -1774,7 +1813,6 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
         config = get_config()
         naming_scripts = config.setting["file_renaming_scripts"]
         naming_script_ids = set(naming_scripts.keys())
-        naming_script_ids |= set(item["id"] for item in get_file_naming_script_presets())
         profile_settings = deepcopy(config.profiles[SettingConfigSection.SETTINGS_KEY])
         for profile in config.profiles[SettingConfigSection.PROFILES_KEY]:
             p_id = profile["id"]
@@ -1823,11 +1861,7 @@ class MainWindow(QtWidgets.QMainWindow, PreserveGeometry):
             group.addAction(script_action)
 
         for (id, naming_script) in sorted(naming_scripts.items(), key=lambda item: item[1]['title']):
-            _add_menu_item(user_script_title(naming_script['title']), id)
-
-        # Add preset scripts not provided in the user-defined scripts list.
-        for script_item in get_file_naming_script_presets():
-            _add_menu_item(script_item['title'], script_item['id'])
+            _add_menu_item(naming_script['title'], id)
 
     def select_new_naming_script(self, id):
         """Update the currently selected naming script ID in the settings.

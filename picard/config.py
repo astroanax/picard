@@ -3,10 +3,10 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2006-2007, 2014, 2017 Lukáš Lalinský
-# Copyright (C) 2008, 2014, 2019-2022 Philipp Wolfer
+# Copyright (C) 2008, 2014, 2019-2023 Philipp Wolfer
 # Copyright (C) 2012, 2017 Wieland Hoffmann
 # Copyright (C) 2012-2014 Michael Wiencek
-# Copyright (C) 2013-2016, 2018-2021 Laurent Monin
+# Copyright (C) 2013-2016, 2018-2022 Laurent Monin
 # Copyright (C) 2016 Suhas
 # Copyright (C) 2016-2018 Sambhav Kothari
 # Copyright (C) 2017 Sophist-UK
@@ -422,8 +422,6 @@ class Option(QtCore.QObject):
         self.section = section
         self.name = name
         self.default = default
-        if not hasattr(self, "convert"):
-            self.convert = type(default)
         self.registry[key] = self
 
     @classmethod
@@ -438,6 +436,9 @@ class Option(QtCore.QObject):
     @classmethod
     def exists(cls, section, name):
         return (section, name) in cls.registry
+
+    def convert(self, value):
+        return type(self.default)(value)
 
 
 class TextOption(Option):

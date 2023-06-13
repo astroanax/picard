@@ -3,9 +3,9 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2007, 2011 Lukáš Lalinský
-# Copyright (C) 2008-2010, 2019, 2021 Philipp Wolfer
+# Copyright (C) 2008-2010, 2019, 2021, 2023 Philipp Wolfer
 # Copyright (C) 2012-2013 Michael Wiencek
-# Copyright (C) 2013, 2015, 2018-2021 Laurent Monin
+# Copyright (C) 2013, 2015, 2018-2021, 2023 Laurent Monin
 # Copyright (C) 2016-2018 Sambhav Kothari
 # Copyright (C) 2017 Sophist-UK
 # Copyright (C) 2018 Wieland Hoffmann
@@ -31,12 +31,24 @@ from collections import (
     deque,
     namedtuple,
 )
+from importlib.machinery import PathFinder
 import logging
-import os
+from pathlib import Path
 from threading import Lock
 
 from PyQt5 import QtCore
 
+from picard.const.sys import (
+    FROZEN_TEMP_PATH,
+    IS_FROZEN,
+)
+
+
+# Get the absolute path for the picard module
+if IS_FROZEN:
+    picard_module_path = Path(FROZEN_TEMP_PATH).joinpath('picard').resolve()
+else:
+    picard_module_path = Path(PathFinder().find_module('picard').get_filename()).resolve()
 
 _MAX_TAIL_LEN = 10**6
 
@@ -138,18 +150,27 @@ class TailLogger(QtCore.QObject):
 
 main_logger = logging.getLogger('main')
 
+# do not pass logging messages to the handlers of ancestor loggers (PICARD-2651)
+main_logger.propagate = False
+
 main_logger.setLevel(logging.INFO)
 
 
 def name_filter(record):
-    # provide a significant name from the filepath of the module
-    name, _ = os.path.splitext(os.path.normpath(record.pathname))
-    prefix = os.path.normpath(__package__)
     # In case the module exists within picard, remove the picard prefix
     # else, in case of something like a plugin, keep the path as it is.
-    if name.startswith(prefix):
-        name = name[len(prefix) + 1:].replace(os.sep, ".").replace('.__init__', '')
-    record.name = name
+    # It provides a significant but short name from the filepath of the module
+    path = Path(record.pathname).with_suffix('')
+    # PyInstaller paths are already relative
+    # FIXME: With Python 3.9 this should better use
+    # path.is_relative_to(picard_module_path.parent)
+    # to avoid the exception handling.
+    if path.is_absolute():
+        try:
+            path = path.resolve().relative_to(picard_module_path.parent)
+        except ValueError:
+            pass
+    record.name = '/'.join(p for p in path.parts if p != '__init__')
     return True
 
 
@@ -187,6 +208,10 @@ log = main_logger.log
 
 
 history_logger = logging.getLogger('history')
+
+# do not pass logging messages to the handlers of ancestor loggers (PICARD-2651)
+history_logger.propagate = False
+
 history_logger.setLevel(logging.INFO)
 
 history_tail = TailLogger(_MAX_TAIL_LEN)

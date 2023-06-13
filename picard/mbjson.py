@@ -4,11 +4,11 @@
 #
 # Copyright (C) 2017 David Mandelberg
 # Copyright (C) 2017-2018 Sambhav Kothari
-# Copyright (C) 2017-2022 Laurent Monin
-# Copyright (C) 2018-2022 Philipp Wolfer
+# Copyright (C) 2017-2023 Laurent Monin
+# Copyright (C) 2018-2023 Philipp Wolfer
 # Copyright (C) 2019 Michael Wiencek
-# Copyright (C) 2020, 2023 David Kellner
 # Copyright (C) 2020 dukeyin
+# Copyright (C) 2020, 2023 David Kellner
 # Copyright (C) 2021 Bob Swift
 # Copyright (C) 2021 Vladislav Karbovskii
 #
@@ -27,9 +27,15 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 
+from collections import namedtuple
+
 from picard import log
 from picard.config import get_config
-from picard.const import RELEASE_FORMATS
+from picard.const import (
+    ALIAS_TYPE_ARTIST_NAME_ID,
+    ALIAS_TYPE_LEGAL_NAME_ID,
+    RELEASE_FORMATS,
+)
 from picard.util import (
     format_time,
     linear_combination_of_weights,
@@ -39,30 +45,30 @@ from picard.util import (
 from picard.util.script_detector_weighted import detect_script_weighted
 
 
-_artist_rel_types = {
-    "arranger": "arranger",
-    "audio": "engineer",
-    "chorus master": "performer:chorus master",
-    "composer": "composer",
-    "concertmaster": "performer:concertmaster",
-    "conductor": "conductor",
-    "engineer": "engineer",
-    "instrument arranger": "arranger",
-    "librettist": "lyricist",
-    "live sound": "engineer",
-    "lyricist": "lyricist",
-    # "mastering": "engineer",
-    "mix-DJ": "djmixer",
-    "mix": "mixer",
-    "orchestrator": "arranger",
-    "performing orchestra": "performer:orchestra",
-    "producer": "producer",
-    # "recording": "engineer",
-    "remixer": "remixer",
-    "sound": "engineer",
-    "video director": "director",
-    "vocal arranger": "arranger",
-    "writer": "writer",
+_ARTIST_REL_TYPES = {
+    'arranger': 'arranger',
+    'audio': 'engineer',
+    'chorus master': 'performer:chorus master',
+    'composer': 'composer',
+    'concertmaster': 'performer:concertmaster',
+    'conductor': 'conductor',
+    'engineer': 'engineer',
+    'instrument arranger': 'arranger',
+    'librettist': 'lyricist',
+    'live sound': 'engineer',
+    'lyricist': 'lyricist',
+    # 'mastering': 'engineer',
+    'mix-DJ': 'djmixer',
+    'mix': 'mixer',
+    'orchestrator': 'arranger',
+    'performing orchestra': 'performer:orchestra',
+    'producer': 'producer',
+    # 'recording': 'engineer',
+    'remixer': 'remixer',
+    'sound': 'engineer',
+    'video director': 'director',
+    'vocal arranger': 'arranger',
+    'writer': 'writer',
 }
 
 _TRACK_TO_METADATA = {
@@ -105,109 +111,180 @@ _RELEASE_GROUP_TO_METADATA = {
     'title': '~releasegroup',
 }
 
-
-_REPLACE_MAP = {}
-_PREFIX_ATTRS = ['guest', 'additional', 'minor', 'solo']
+_PREFIX_ATTRS = {'guest', 'additional', 'minor', 'solo'}
 _BLANK_SPECIAL_RELTYPES = {'vocal': 'vocals'}
-
-
-def _transform_attribute(attr, attr_credits):
-    if attr in attr_credits:
-        return attr_credits[attr]
-    else:
-        return _REPLACE_MAP.get(attr, attr)
 
 
 def _parse_attributes(attrs, reltype, attr_credits):
     prefixes = []
     nouns = []
     for attr in attrs:
-        attr = _transform_attribute(attr, attr_credits)
+        if attr in attr_credits:
+            attr = attr_credits[attr]
         if attr in _PREFIX_ATTRS:
             prefixes.append(attr)
         else:
             nouns.append(attr)
-    prefix = ' '.join(prefixes)
     if len(nouns) > 1:
-        result = '%s and %s' % (', '.join(nouns[:-1]), nouns[-1:][0])
+        result = "%s and %s" % (", ".join(nouns[:-1]), nouns[-1:][0])
     elif len(nouns) == 1:
         result = nouns[0]
     else:
-        result = _BLANK_SPECIAL_RELTYPES.get(reltype, '')
-    return ' '.join([prefix, result]).strip()
+        result = _BLANK_SPECIAL_RELTYPES.get(reltype, "")
+    prefix = " ".join(prefixes)
+    return " ".join([prefix, result]).strip()
 
 
 def _relation_attributes(relation):
-    if 'attributes' in relation:
-        return tuple(a for a in relation['attributes'])
-    return tuple()
+    try:
+        return tuple(relation['attributes'])
+    except KeyError:
+        return tuple()
 
 
-def _relations_to_metadata(relations, m, instrumental=False, config=None):
+def _relations_to_metadata_target_type_artist(relation, m, context):
+    artist = relation['artist']
+    translated_name, sort_name = _translate_artist_node(artist, config=context.config)
+    has_translation = (translated_name != artist['name'])
+    if not has_translation and context.use_credited_as and 'target-credit' in relation:
+        credited_as = relation['target-credit']
+        if credited_as:
+            translated_name = credited_as
+    reltype = relation['type']
+    attribs = _relation_attributes(relation)
+    if reltype in {'vocal', 'instrument', 'performer'}:
+        if context.use_instrument_credits:
+            attr_credits = relation.get('attribute-credits', {})
+        else:
+            attr_credits = {}
+        name = 'performer:' + _parse_attributes(attribs, reltype, attr_credits)
+    elif reltype == 'mix-DJ' and attribs:
+        if not hasattr(m, '_djmix_ars'):
+            m._djmix_ars = {}
+        for attr in attribs:
+            m._djmix_ars.setdefault(attr.split()[1], []).append(translated_name)
+        return
+    else:
+        try:
+            name = _ARTIST_REL_TYPES[reltype]
+        except KeyError:
+            return
+    if context.instrumental and name == 'lyricist':
+        return
+    m.add_unique(name, translated_name)
+    if name == 'composer':
+        m.add_unique('composersort', sort_name)
+    elif name == 'lyricist':
+        m.add_unique('~lyricistsort', sort_name)
+    elif name == 'writer':
+        m.add_unique('~writersort', sort_name)
+
+
+def _relations_to_metadata_target_type_work(relation, m, context):
+    if relation['type'] == 'performance':
+        performance_attributes = _relation_attributes(relation)
+        for attribute in performance_attributes:
+            m.add_unique('~performance_attributes', attribute)
+        instrumental = 'instrumental' in performance_attributes
+        work_to_metadata(relation['work'], m, instrumental)
+
+
+def _relations_to_metadata_target_type_url(relation, m, context):
+    if relation['type'] == 'amazon asin' and 'asin' not in m:
+        amz = parse_amazon_url(relation['url']['resource'])
+        if amz is not None:
+            m['asin'] = amz['asin']
+    elif relation['type'] == 'license':
+        url = relation['url']['resource']
+        m.add('license', url)
+
+
+def _relations_to_metadata_target_type_series(relation, m, context):
+    if relation['type'] == 'part of':
+        entity = context.entity
+        series = relation['series']
+        var_prefix = f'~{entity}_' if entity else '~'
+        m.add(f'{var_prefix}series', series['name'])
+        m.add(f'{var_prefix}seriesid', series['id'])
+        m.add(f'{var_prefix}seriescomment', series['disambiguation'])
+        m.add(f'{var_prefix}seriesnumber', relation['attribute-values'].get('number', ''))
+
+
+_RELATIONS_TO_METADATA_TARGET_TYPE_FUNC = {
+    'artist': _relations_to_metadata_target_type_artist,
+    'series': _relations_to_metadata_target_type_series,
+    'url': _relations_to_metadata_target_type_url,
+    'work': _relations_to_metadata_target_type_work,
+}
+
+
+TargetTypeFuncContext = namedtuple(
+    'TargetTypeFuncContext',
+    'config entity instrumental use_credited_as use_instrument_credits'
+)
+
+
+def _relations_to_metadata(relations, m, instrumental=False, config=None, entity=None):
     config = config or get_config()
-    use_credited_as = not config.setting['standardize_artists']
-    use_instrument_credits = not config.setting['standardize_instruments']
+    context = TargetTypeFuncContext(
+        config,
+        entity,
+        instrumental,
+        not config.setting['standardize_artists'],
+        not config.setting['standardize_instruments'],
+    )
     for relation in relations:
-        if relation['target-type'] == 'artist':
-            artist = relation['artist']
-            value, valuesort = _translate_artist_node(artist, config=config)
-            has_translation = (value != artist['name'])
-            if not has_translation and use_credited_as and 'target-credit' in relation:
-                credited_as = relation['target-credit']
-                if credited_as:
-                    value = credited_as
-            reltype = relation['type']
-            attribs = _relation_attributes(relation)
-            if reltype in {'vocal', 'instrument', 'performer'}:
-                if use_instrument_credits:
-                    attr_credits = relation.get('attribute-credits', {})
-                else:
-                    attr_credits = {}
-                name = 'performer:' + _parse_attributes(attribs, reltype, attr_credits)
-            elif reltype == 'mix-DJ' and attribs:
-                if not hasattr(m, "_djmix_ars"):
-                    m._djmix_ars = {}
-                for attr in attribs:
-                    m._djmix_ars.setdefault(attr.split()[1], []).append(value)
-                continue
-            else:
-                try:
-                    name = _artist_rel_types[reltype]
-                except KeyError:
-                    continue
-            if instrumental and name == 'lyricist':
-                continue
-            m.add_unique(name, value)
-            if name == 'composer':
-                m.add_unique('composersort', valuesort)
-            elif name == 'lyricist':
-                m.add_unique('~lyricistsort', valuesort)
-            elif name == 'writer':
-                m.add_unique('~writersort', valuesort)
-        elif relation['target-type'] == 'work':
-            if relation['type'] == 'performance':
-                performance_attributes = _relation_attributes(relation)
-                for attribute in performance_attributes:
-                    m.add_unique("~performance_attributes", attribute)
-                instrumental = 'instrumental' in performance_attributes
-                work_to_metadata(relation['work'], m, instrumental)
-        elif relation['target-type'] == 'url':
-            if relation['type'] == 'amazon asin' and 'asin' not in m:
-                amz = parse_amazon_url(relation['url']['resource'])
-                if amz is not None:
-                    m['asin'] = amz['asin']
-            elif relation['type'] == 'license':
-                url = relation['url']['resource']
-                m.add('license', url)
+        if relation['target-type'] in _RELATIONS_TO_METADATA_TARGET_TYPE_FUNC:
+            _RELATIONS_TO_METADATA_TARGET_TYPE_FUNC[relation['target-type']](relation, m, context)
+
+
+def _locales_from_aliases(aliases):
+    def check_higher_score(locale_dict, locale, score):
+        return locale not in locale_dict or score > locale_dict[locale][0]
+
+    full_locales = {}
+    root_locales = {}
+    for alias in aliases:
+        if not alias['primary']:
+            continue
+        if 'locale' not in alias:
+            continue
+        full_locale = alias['locale']
+        root_locale = full_locale.split('_')[0]
+        full_parts = []
+        root_parts = []
+        score = 0.8
+        full_parts.append((score, 5))
+        if '_' in full_locale:
+            score = 0.4
+        root_parts.append((score, 5))
+        if alias['type-id'] == ALIAS_TYPE_ARTIST_NAME_ID:
+            score = 0.8
+        elif alias['type-id'] == ALIAS_TYPE_LEGAL_NAME_ID:
+            score = 0.5
+        else:
+            # as 2014/09/19, only Artist or Legal names should have the
+            # Primary flag
+            score = 0.0
+        full_parts.append((score, 5))
+        root_parts.append((score, 5))
+        comb = linear_combination_of_weights(full_parts)
+        if check_higher_score(full_locales, full_locale, comb):
+            full_locales[full_locale] = (comb, (alias['name'], alias['sort-name']))
+        comb = linear_combination_of_weights(root_parts)
+        if check_higher_score(root_locales, root_locale, comb):
+            root_locales[root_locale] = (comb, (alias['name'], alias['sort-name']))
+
+    return full_locales, root_locales
 
 
 def _translate_artist_node(node, config=None):
     config = config or get_config()
-    transl, translsort = None, None
+    translated_name, sort_name = None, None
     if config.setting['translate_artist_names']:
         if config.setting['translate_artist_names_script_exception']:
-            log_text = 'Script alpha characters found in "{0}": '.format(node["name"],)
-            detected_scripts = detect_script_weighted(node["name"])
+            log_text = 'Script alpha characters found in "{0}": '.format(node['name'],)
+            detected_scripts = detect_script_weighted(node['name'])
             if detected_scripts:
                 log_text += "; ".join(
                     "{0} ({1:.1f}%)".format(scr_id, detected_scripts[scr_id] * 100)
@@ -217,7 +294,7 @@ def _translate_artist_node(node, config=None):
                 log_text += "None"
             log.debug(log_text)
             if detected_scripts:
-                script_exceptions = config.setting["script_exceptions"]
+                script_exceptions = config.setting['script_exceptions']
                 if script_exceptions:
                     log_text = " found in selected scripts: " + "; ".join(
                         "{0} ({1}%)".format(scr[0], scr[1])
@@ -233,109 +310,75 @@ def _translate_artist_node(node, config=None):
                 else:
                     log.warning("No scripts selected for translation exception match check.")
 
-        def check_higher_score(locale_dict, locale, score):
-            return locale not in locale_dict or score > locale_dict[locale][0]
-
         # Prepare dictionaries of available locale aliases
-        full_locales = {}
-        root_locales = {}
-        if "aliases" in node:
-            for alias in node['aliases']:
-                if not alias["primary"]:
-                    continue
-                if "locale" not in alias:
-                    continue
-                full_locale = alias['locale']
-                root_locale = full_locale.split("_")[0]
-                full_parts = []
-                root_parts = []
-                score = 0.8
-                full_parts.append((score, 5))
-                if '_' in full_locale:
-                    score = 0.4
-                root_parts.append((score, 5))
-                if alias["type"] == "Artist name":
-                    score = 0.8
-                elif alias["type"] == "Legal Name":
-                    score = 0.5
-                else:
-                    # as 2014/09/19, only Artist or Legal names should have the
-                    # Primary flag
-                    score = 0.0
-                full_parts.append((score, 5))
-                root_parts.append((score, 5))
-                comb = linear_combination_of_weights(full_parts)
-                if check_higher_score(full_locales, full_locale, comb):
-                    full_locales[full_locale] = (comb, (alias['name'], alias["sort-name"]))
-                comb = linear_combination_of_weights(root_parts)
-                if check_higher_score(root_locales, root_locale, comb):
-                    root_locales[root_locale] = (comb, (alias['name'], alias["sort-name"]))
+        if 'aliases' in node:
+            full_locales, root_locales = _locales_from_aliases(node['aliases'])
 
             # First pass to match full locale if available
-            for locale in config.setting["artist_locales"]:
+            for locale in config.setting['artist_locales']:
                 if locale in full_locales:
                     return full_locales[locale][1]
 
             # Second pass to match root locale if available
-            for locale in config.setting["artist_locales"]:
-                lang = locale.split("_")[0]
+            for locale in config.setting['artist_locales']:
+                lang = locale.split('_')[0]
                 if lang in root_locales:
                     return root_locales[lang][1]
 
         # No matches found in available alias locales
-        translsort = node['sort-name']
-        transl = translate_from_sortname(node['name'] or "", translsort)
+        sort_name = node['sort-name']
+        translated_name = translate_from_sortname(node['name'] or '', sort_name)
     else:
-        transl, translsort = node['name'], node['sort-name']
-    return (transl, translsort)
+        translated_name, sort_name = node['name'], node['sort-name']
+    return (translated_name, sort_name)
 
 
 def artist_credit_from_node(node):
-    artist = ""
-    artistsort = ""
-    artists = []
-    artistssort = []
+    artist_name = ''
+    artist_sort_name = ''
+    artist_names = []
+    artist_sort_names = []
     config = get_config()
-    use_credited_as = not config.setting["standardize_artists"]
+    use_credited_as = not config.setting['standardize_artists']
     for artist_info in node:
-        a = artist_info['artist']
-        translated, translated_sort = _translate_artist_node(a, config=config)
-        has_translation = (translated != a['name'])
+        artist = artist_info['artist']
+        translated_name, sort_name = _translate_artist_node(artist, config=config)
+        has_translation = (translated_name != artist['name'])
         if has_translation:
-            name = translated
+            name = translated_name
         elif use_credited_as and 'name' in artist_info:
             name = artist_info['name']
         else:
-            name = a['name']
-        artist += name
-        artistsort += translated_sort or ""
-        artists.append(name)
-        artistssort.append(translated_sort)
+            name = artist['name']
+        artist_name += name
+        artist_sort_name += sort_name or ''
+        artist_names.append(name)
+        artist_sort_names.append(sort_name or '')
         if 'joinphrase' in artist_info:
-            artist += artist_info['joinphrase'] or ""
-            artistsort += artist_info['joinphrase'] or ""
-    return (artist, artistsort, artists, artistssort)
+            artist_name += artist_info['joinphrase'] or ''
+            artist_sort_name += artist_info['joinphrase'] or ''
+    return (artist_name, artist_sort_name, artist_names, artist_sort_names)
 
 
 def artist_credit_to_metadata(node, m, release=False):
     ids = [n['artist']['id'] for n in node]
-    artist, artistsort, artists, artistssort = artist_credit_from_node(node)
+    artist_name, artist_sort_name, artist_names, artist_sort_names = artist_credit_from_node(node)
     if release:
-        m["musicbrainz_albumartistid"] = ids
-        m["albumartist"] = artist
-        m["albumartistsort"] = artistsort
-        m["~albumartists"] = artists
-        m["~albumartists_sort"] = artistssort
+        m['musicbrainz_albumartistid'] = ids
+        m['albumartist'] = artist_name
+        m['albumartistsort'] = artist_sort_name
+        m['~albumartists'] = artist_names
+        m['~albumartists_sort'] = artist_sort_names
     else:
-        m["musicbrainz_artistid"] = ids
-        m["artist"] = artist
-        m["artistsort"] = artistsort
-        m["artists"] = artists
-        m["~artists_sort"] = artistssort
+        m['musicbrainz_artistid'] = ids
+        m['artist'] = artist_name
+        m['artistsort'] = artist_sort_name
+        m['artists'] = artist_names
+        m['~artists_sort'] = artist_sort_names
 
 
 def _release_event_iter(node):
-    if "release-events" in node:
+    if 'release-events' in node:
         yield from node['release-events']
 
 
@@ -445,7 +488,7 @@ def recording_to_metadata(node, m, track=None):
                     artist_obj = track.append_track_artist(artist['id'])
                     add_genres_from_node(artist, artist_obj)
         elif key == 'relations':
-            _relations_to_metadata(value, m, config=config)
+            _relations_to_metadata(value, m, config=config, entity='recording')
         elif key == 'isrcs':
             add_isrcs_to_metadata(value, m)
         elif key == 'video' and value:
@@ -458,20 +501,20 @@ def recording_to_metadata(node, m, track=None):
 
 
 def work_to_metadata(work, m, instrumental=False):
-    m.add_unique("musicbrainz_workid", work['id'])
+    m.add_unique('musicbrainz_workid', work['id'])
     if instrumental:
-        m.add_unique("language", 'zxx')  # no lyrics
+        m.add_unique('language', 'zxx')  # no lyrics
     elif 'languages' in work:
         for language in work['languages']:
-            m.add_unique("language", language)
+            m.add_unique('language', language)
     elif 'language' in work:
-        m.add_unique("language", work['language'])
+        m.add_unique('language', work['language'])
     if 'title' in work:
-        m.add_unique("work", work['title'])
+        m.add_unique('work', work['title'])
     if 'disambiguation' in work:
-        m.add_unique("~workcomment", work['disambiguation'])
+        m.add_unique('~workcomment', work['disambiguation'])
     if 'relations' in work:
-        _relations_to_metadata(work['relations'], m, instrumental)
+        _relations_to_metadata(work['relations'], m, instrumental, entity='work')
 
 
 def medium_to_metadata(node, m):
@@ -487,23 +530,23 @@ def medium_to_metadata(node, m):
 
 def artist_to_metadata(node, m):
     """Make meatadata dict from a JSON 'artist' node."""
-    m.add_unique("musicbrainz_artistid", node['id'])
+    m.add_unique('musicbrainz_artistid', node['id'])
     for key, value in _node_skip_empty_iter(node):
         if key in _ARTIST_TO_METADATA:
             m[_ARTIST_TO_METADATA[key]] = value
-        elif key == "area":
-            m["area"] = value['name']
-        elif key == "life-span":
-            if "begin" in value:
-                m["begindate"] = value['begin']
-            if "ended" in value:
+        elif key == 'area':
+            m['area'] = value['name']
+        elif key == 'life-span':
+            if 'begin' in value:
+                m['begindate'] = value['begin']
+            if 'ended' in value:
                 ended = value['ended']
-                if ended and "end" in value:
-                    m["enddate"] = value['end']
-        elif key == "begin-area":
-            m["beginarea"] = value['name']
-        elif key == "end-area":
-            m["endarea"] = value['name']
+                if ended and 'end' in value:
+                    m['enddate'] = value['end']
+        elif key == 'begin-area':
+            m['beginarea'] = value['name']
+        elif key == 'end-area':
+            m['endarea'] = value['name']
 
 
 def release_to_metadata(node, m, album=None):
@@ -524,7 +567,7 @@ def release_to_metadata(node, m, album=None):
                     artist_obj = album.append_album_artist(artist['id'])
                     add_genres_from_node(artist, artist_obj)
         elif key == 'relations' and config.setting['release_ars']:
-            _relations_to_metadata(value, m, config=config)
+            _relations_to_metadata(value, m, config=config, entity='release')
         elif key == 'label-info':
             m['label'], m['catalognumber'] = label_info_from_node(value)
         elif key == 'text-representation':
@@ -536,7 +579,7 @@ def release_to_metadata(node, m, album=None):
     # The MB web service returns the first release country in the country tag.
     # If the user has configured preferred release countries, use the first one
     # if it is one in the complete list of release countries.
-    for country in config.setting["preferred_release_countries"]:
+    for country in config.setting['preferred_release_countries']:
         if country in release_countries:
             m['releasecountry'] = country
             break
@@ -545,6 +588,7 @@ def release_to_metadata(node, m, album=None):
 
 def release_group_to_metadata(node, m, release_group=None):
     """Make metadata dict from a JSON 'release-group' node taken from inside a 'release' node."""
+    config = get_config()
     m.add_unique('musicbrainz_releasegroupid', node['id'])
     for key, value in _node_skip_empty_iter(node):
         if key in _RELEASE_GROUP_TO_METADATA:
@@ -553,6 +597,8 @@ def release_group_to_metadata(node, m, release_group=None):
             m['~primaryreleasetype'] = value.lower()
         elif key == 'secondary-types':
             add_secondary_release_types(value, m)
+        elif key == 'relations' and config.setting['release_ars']:
+            _relations_to_metadata(value, m, config=config, entity='releasegroup')
     add_genres_from_node(node, release_group)
     if m['~releasegroup_firstreleasedate']:
         m['originaldate'] = m['~releasegroup_firstreleasedate']
@@ -580,17 +626,12 @@ def add_genres_from_node(node, obj):
 
 def add_genres(node, obj):
     for tag in node:
-        key = tag['name']
-        count = tag['count']
-        if key:
-            obj.add_genre(key, count)
+        obj.add_genre(tag['name'], tag['count'])
 
 
 def add_user_genres(node, obj):
     for tag in node:
-        key = tag['name']
-        if key:
-            obj.add_genre(key, 1)
+        obj.add_genre(tag['name'], 1)
 
 
 def add_isrcs_to_metadata(node, metadata):

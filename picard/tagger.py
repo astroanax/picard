@@ -6,7 +6,7 @@
 # Copyright (C) 2006-2009, 2011-2014, 2017 Lukáš Lalinský
 # Copyright (C) 2008 Gary van der Merwe
 # Copyright (C) 2008 amckinle
-# Copyright (C) 2008-2010, 2014-2015, 2018-2022 Philipp Wolfer
+# Copyright (C) 2008-2010, 2014-2015, 2018-2023 Philipp Wolfer
 # Copyright (C) 2009 Carlin Mangar
 # Copyright (C) 2010 Andrew Barnert
 # Copyright (C) 2011-2014 Michael Wiencek
@@ -22,12 +22,13 @@
 # Copyright (C) 2016 Suhas
 # Copyright (C) 2016-2018 Sambhav Kothari
 # Copyright (C) 2017-2018 Vishal Choudhary
-# Copyright (C) 2018, 2022 Bob Swift
 # Copyright (C) 2018 virusMac
+# Copyright (C) 2018, 2022-2023 Bob Swift
 # Copyright (C) 2019 Joel Lintunen
 # Copyright (C) 2020 Julius Michaelis
 # Copyright (C) 2020-2021 Gabriel Ferreira
-# Copyright (c) 2022 skelly37
+# Copyright (C) 2022 Kamil
+# Copyright (C) 2022 skelly37
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -539,7 +540,7 @@ class Tagger(QtWidgets.QApplication):
                 delay = float(arg)
                 if delay < 0:
                     raise ValueError
-                log.debug(f"Pausing command execution by {delay} seconds.")
+                log.debug("Pausing command execution by %d seconds.", delay)
                 thread.run_task(partial(time.sleep, delay))
             except ValueError:
                 log.error(f"Invalid command pause time specified: {repr(argstring)}")
@@ -547,12 +548,13 @@ class Tagger(QtWidgets.QApplication):
             log.error("No command pause time specified.")
 
     def handle_command_quit(self, argstring):
-        if not argstring.upper() == 'FORCE' and self.window.show_quit_confirmation():
+        if argstring.upper() == 'FORCE' or self.window.show_quit_confirmation():
+            self.exit()
+            self.quit()
+        else:
             log.info("QUIT command cancelled by the user.")
             RemoteCommands.set_quit(False)  # Allow queueing more commands.
             return
-        self.exit()
-        self.quit()
 
     def handle_command_remove(self, argstring):
         for file in self.iter_all_files():
@@ -704,7 +706,7 @@ class Tagger(QtWidgets.QApplication):
         log.debug("Picard stopping")
         self._acoustid.done()
         if self.pipe_handler:
-            self.pipe_handler.pipe_running = False
+            self.pipe_handler.stop()
         self.webservice.stop()
         self.thread_pool.waitForDone()
         self.save_thread_pool.waitForDone()

@@ -302,7 +302,10 @@ class picard_build(build):
             generate_file('win-version-info.txt.in', 'win-version-info.txt', {**args, **version_args})
 
             default_publisher = 'CN=Metabrainz Foundation Inc., O=Metabrainz Foundation Inc., L=San Luis Obispo, S=California, C=US'
-            store_version = (PICARD_VERSION.major, PICARD_VERSION.minor, PICARD_VERSION.patch * 10000 + self.build_number, 0)
+            # Combine patch version with build number. As Windows store apps require continuously
+            # growing version numbers we combine the patch version with a build number set by the
+            # build script.
+            store_version = (PICARD_VERSION.major, PICARD_VERSION.minor, PICARD_VERSION.patch * 1000 + min(self.build_number, 999), 0)
             generate_file('appxmanifest.xml.in', 'appxmanifest.xml', {
                 'app-id': "MetaBrainzFoundationInc." + PICARD_APP_ID,
                 'display-name': PICARD_DISPLAY_NAME,
@@ -346,7 +349,7 @@ class picard_build_ui(Command):
                 if m:
                     name = m.group(1)
                 else:
-                    log.warn('ignoring %r (cannot extract base name)' % f)
+                    log.warn('ignoring %r (cannot extract base name)', f)
                     continue
                 uiname = name + '.ui'
                 uifile = os.path.join(head, uiname)
@@ -360,7 +363,7 @@ class picard_build_ui(Command):
                         files.append((uifile,
                                       py_from_ui_with_defaultdir(uifile)))
                     else:
-                        log.warn('ignoring %r' % f)
+                        log.warn('ignoring %r', f)
             self.files = files
 
     def run(self):
@@ -518,10 +521,9 @@ class picard_pull_translations(Command):
             tx_executable,
             'pull',
             '--force',
-            '--resource',
-            'musicbrainz.picard',
-            '--language',
+            '--languages',
             'en_AU,en_GB,en_CA'
+            'musicbrainz.picard',
         ])
 
 
@@ -600,9 +602,9 @@ class picard_update_constants(Command):
                 tx_executable,
                 'pull',
                 '--force',
-                '--resource=musicbrainz.attributes,musicbrainz.countries',
                 '--source',
-                '--language=none',
+                'musicbrainz.attributes',
+                'musicbrainz.countries',
             ]
             self.spawn(txpull_cmd)
 
@@ -664,8 +666,7 @@ class picard_update_constants(Command):
             for code, name in sorted(countries.items(), key=lambda t: t[0]):
                 write(line, code=code, name=name.replace("'", "\\'"))
             write(footer)
-            log.info("%s was rewritten (%d countries)" % (filename,
-                                                          len(countries)))
+            log.info("%s was rewritten (%d countries)", filename, len(countries))
 
     def attributes_py_file(self, attributes):
         header = ("# -*- coding: utf-8 -*-\n"
@@ -684,8 +685,7 @@ class picard_update_constants(Command):
             for key, value in sorted(attributes.items(), key=lambda i: i[0]):
                 write(line, key=key, value=value.replace("'", "\\'"))
             write(footer)
-            log.info("%s was rewritten (%d attributes)" % (filename,
-                                                           len(attributes)))
+            log.info("%s was rewritten (%d attributes)", filename, len(attributes))
 
 
 class picard_patch_version(Command):

@@ -3,18 +3,19 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2006-2008, 2011-2014 Lukáš Lalinský
-# Copyright (C) 2009, 2018-2022 Philipp Wolfer
+# Copyright (C) 2009, 2018-2023 Philipp Wolfer
 # Copyright (C) 2012 Chad Wilson
 # Copyright (C) 2012-2013 Michael Wiencek
-# Copyright (C) 2013-2021 Laurent Monin
+# Copyright (C) 2013-2022 Laurent Monin
 # Copyright (C) 2015 Ohm Patel
 # Copyright (C) 2015 Sophist-UK
 # Copyright (C) 2016 Suhas
 # Copyright (C) 2016-2017 Wieland Hoffmann
 # Copyright (C) 2016-2018 Sambhav Kothari
 # Copyright (C) 2017 Ville Skyttä
-# Copyright (C) 2018, 2021 Bob Swift
+# Copyright (C) 2018, 2021, 2023 Bob Swift
 # Copyright (C) 2021 Gabriel Ferreira
+# Copyright (C) 2022 skelly37
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -39,7 +40,7 @@ PICARD_APP_NAME = "Picard"
 PICARD_DISPLAY_NAME = "MusicBrainz Picard"
 PICARD_APP_ID = "org.musicbrainz.Picard"
 PICARD_DESKTOP_NAME = PICARD_APP_ID + ".desktop"
-PICARD_VERSION = Version(2, 9, 0, 'alpha', 1)
+PICARD_VERSION = Version(2, 9, 0, 'beta', 1)
 
 
 # optional build version

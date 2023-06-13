@@ -4,14 +4,14 @@
 #
 # Copyright (C) 2006-2009, 2012 Lukáš Lalinský
 # Copyright (C) 2007 Javier Kohen
-# Copyright (C) 2008-2011, 2014-2015, 2018-2022 Philipp Wolfer
+# Copyright (C) 2008-2011, 2014-2015, 2018-2023 Philipp Wolfer
 # Copyright (C) 2009 Carlin Mangar
 # Copyright (C) 2009 Nikolai Prokoschenko
 # Copyright (C) 2011-2012 Michael Wiencek
 # Copyright (C) 2012 Chad Wilson
 # Copyright (C) 2012 stephen
 # Copyright (C) 2012, 2014, 2017, 2021 Wieland Hoffmann
-# Copyright (C) 2013-2014, 2017-2021 Laurent Monin
+# Copyright (C) 2013-2014, 2017-2022 Laurent Monin
 # Copyright (C) 2014, 2017, 2021 Sophist-UK
 # Copyright (C) 2016-2017 Sambhav Kothari
 # Copyright (C) 2016-2017 Ville Skyttä
@@ -1606,7 +1606,7 @@ def _extract(_func, _type, *args):
 
 
 @script_function(documentation=N_(
-    """$min(type,x,...)
+    """`$min(type,x,...)`
 
 Returns the minimum value using the comparison specified in `type`.
 
@@ -1620,14 +1620,14 @@ first type that applies to both arguments in the following order of preference:
 Can be used with an arbitrary number of arguments.  Multi-value arguments
 will be expanded automatically.
 
-_Since Picard 3.0_"""
+_Since Picard 2.9_"""
 ))
 def func_min(parser, _type, x, *args):
     return _extract(min, _type, x, *args)
 
 
 @script_function(documentation=N_(
-    """$max(type,x,...)
+    """`$max(type,x,...)`
 
 Returns the maximum value using the comparison specified in `type`.
 
@@ -1641,7 +1641,7 @@ first type that applies to both arguments in the following order of preference:
 Can be used with an arbitrary number of arguments.  Multi-value arguments
 will be expanded automatically.
 
-_Since Picard 3.0_"""
+_Since Picard 2.9_"""
 ))
 def func_max(parser, _type, x, *args):
     return _extract(max, _type, x, *args)

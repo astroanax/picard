@@ -25,8 +25,8 @@
 # Copyright (C) 2019 Joel Lintunen
 # Copyright (C) 2020 Ray Bouchard
 # Copyright (C) 2020-2021 Gabriel Ferreira
-# Copyright (C) 2021, 2023 Bob Swift
 # Copyright (C) 2021 Petit Minion
+# Copyright (C) 2021, 2023 Bob Swift
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -252,7 +252,7 @@ class File(QtCore.QObject, Item):
             if alternative_file:
                 # Do not retry reloading exactly the same file format
                 if type(alternative_file) != type(self):  # pylint: disable=unidiomatic-typecheck
-                    log.debug('Loading %r failed, retrying as %r' % (self, alternative_file))
+                    log.debug('Loading %r failed, retrying as %r', self, alternative_file)
                     self.remove()
                     alternative_file.load(callback)
                     return

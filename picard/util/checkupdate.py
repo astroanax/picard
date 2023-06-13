@@ -3,8 +3,8 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2018 Bob Swift
-# Copyright (C) 2018, 2020, 2022 Philipp Wolfer
-# Copyright (C) 2018, 2020-2021 Laurent Monin
+# Copyright (C) 2018, 2020, 2022-2023 Philipp Wolfer
+# Copyright (C) 2018, 2020-2022 Laurent Monin
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -87,12 +87,10 @@ class UpdateCheckManager(QtCore.QObject):
 
     def _query_available_updates(self, callback=None):
         """Gets list of releases from specified website api."""
-        log.debug("Getting Picard release information from {host_url}".format(host_url=PLUGINS_API['host'],))
-        self.tagger.webservice.get(
-            PLUGINS_API['host'],
-            PLUGINS_API['port'],
-            PLUGINS_API['endpoint']['releases'],
-            partial(self._releases_json_loaded, callback=callback),
+        log.debug("Getting Picard release information from %s", PLUGINS_API['urls']['releases'])
+        self.tagger.webservice.get_url(
+            url=PLUGINS_API['urls']['releases'],
+            handler=partial(self._releases_json_loaded, callback=callback),
             priority=True,
             important=True
         )
@@ -105,9 +103,8 @@ class UpdateCheckManager(QtCore.QObject):
                 QMessageBox.information(
                     self._parent,
                     _("Picard Update"),
-                    _("Unable to retrieve the latest version information from the website.\n(https://{url}{endpoint})").format(
-                        url=PLUGINS_API['host'],
-                        endpoint=PLUGINS_API['endpoint']['releases'],
+                    _("Unable to retrieve the latest version information from the website.\n({url})").format(
+                        url=PLUGINS_API['urls']['releases'],
                     ),
                     QMessageBox.StandardButton.Ok, QMessageBox.StandardButton.Ok)
         else:
@@ -116,8 +113,7 @@ class UpdateCheckManager(QtCore.QObject):
             else:
                 self._available_versions = {}
             for key in self._available_versions:
-                log.debug("Version key '{version_key}' --> {version_information}".format(
-                    version_key=key, version_information=self._available_versions[key],))
+                log.debug("Version key '%s' -> %s", key, self._available_versions[key])
             self._display_results()
         if callback:
             callback(not error)
@@ -132,7 +128,7 @@ class UpdateCheckManager(QtCore.QObject):
             try:
                 test_version = Version(*version_tuple)
             except (TypeError, VersionError):
-                log.error('Invalid version %r for update level %s.' % (version_tuple, update_level))
+                log.error('Invalid version %r for update level %s.', version_tuple, update_level)
                 continue
             if self._update_level >= test_key and test_version > high_version:
                 key = PROGRAM_UPDATE_LEVELS[test_key]['name']

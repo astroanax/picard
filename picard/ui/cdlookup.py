@@ -3,7 +3,7 @@
 # Picard, the next-generation MusicBrainz tagger
 #
 # Copyright (C) 2006-2007 Lukáš Lalinský
-# Copyright (C) 2009, 2018-2022 Philipp Wolfer
+# Copyright (C) 2009, 2018-2023 Philipp Wolfer
 # Copyright (C) 2011-2013 Michael Wiencek
 # Copyright (C) 2012 Chad Wilson
 # Copyright (C) 2013-2014, 2018, 2020-2021 Laurent Monin
@@ -137,11 +137,11 @@ class CDLookupDialog(PicardDialog):
             state = config.persist[self.dialog_header_state]
             if state:
                 header.restoreState(state)
-                log.debug("restore_state: %s" % self.dialog_header_state)
+                log.debug("restore_state: %s", self.dialog_header_state)
 
     def save_header_state(self):
         if self.ui.release_list:
             state = self.ui.release_list.header().saveState()
             config = get_config()
             config.persist[self.dialog_header_state] = state
-            log.debug("save_state: %s" % self.dialog_header_state)
+            log.debug("save_state: %s", self.dialog_header_state)

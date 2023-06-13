@@ -2,9 +2,11 @@
 #
 # Picard, the next-generation MusicBrainz tagger
 #
-# Copyright (C) 2022 skelly37
-# Copyright (C) 2022 Philipp Wolfer
 # Copyright (C) 2022 Bob Swift
+# Copyright (C) 2022 Kamil
+# Copyright (C) 2022 Laurent Monin
+# Copyright (C) 2022 skelly37
+# Copyright (C) 2022-2023 Philipp Wolfer
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -19,6 +21,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
 
 from abc import (
     ABCMeta,
@@ -270,11 +273,17 @@ class AbstractPipe(metaclass=ABCMeta):
             if sender.result(timeout=timeout_secs):
                 return True
         except concurrent.futures._base.TimeoutError:
-            log.warning("Couldn't send: %r", message)
+            if self.pipe_running:
+                log.warning("Couldn't send: %r", message)
             # hacky way to kill the sender
             self.read_from_pipe()
 
         return False
+
+    def stop(self):
+        log.debug("Stopping pipe")
+        self.pipe_running = False
+        self.send_to_pipe(self.MESSAGE_TO_IGNORE)
 
 
 class UnixPipe(AbstractPipe):

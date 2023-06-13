@@ -4,10 +4,10 @@
 #
 # Copyright (C) 2007 Oliver Charles
 # Copyright (C) 2007, 2010-2011 Lukáš Lalinský
-# Copyright (C) 2007-2011, 2014, 2018-2022 Philipp Wolfer
+# Copyright (C) 2007-2011, 2014, 2018-2023 Philipp Wolfer
 # Copyright (C) 2011 Michael Wiencek
 # Copyright (C) 2011-2012, 2015 Wieland Hoffmann
-# Copyright (C) 2013-2015, 2018-2021 Laurent Monin
+# Copyright (C) 2013-2015, 2018-2022 Laurent Monin
 # Copyright (C) 2016 Ville Skyttä
 # Copyright (C) 2016-2018 Sambhav Kothari
 # Copyright (C) 2017 Antonio Larrosa
@@ -37,7 +37,6 @@ from PyQt5.QtCore import (
     QMutex,
     QObject,
     QUrl,
-    QUrlQuery,
 )
 
 from picard import log
@@ -88,7 +87,7 @@ class DataHash:
                     imagefile.write(data)
                 _datafiles[self._hash] = self._filename
                 periodictouch.register_file(self._filename)
-                log.debug("Saving image data %s to %r" % (self._hash, self._filename))
+                log.debug("Saving image data %s to %r", self._hash, self._filename)
             else:
                 self._filename = _datafiles[self._hash]
         finally:
@@ -160,7 +159,10 @@ class CoverArtImage:
         else:
             self.types = types
         if url is not None:
-            self.parse_url(url)
+            if not isinstance(url, QUrl):
+                self.url = QUrl(url)
+            else:
+                self.url = url
         else:
             self.url = None
         self.comment = comment
@@ -177,17 +179,6 @@ class CoverArtImage:
             self.support_multi_types = support_multi_types
         if data is not None:
             self.set_data(data)
-
-    def parse_url(self, url):
-        self.url = QUrl(url)
-        self.host = self.url.host()
-        self.port = self.url.port(443 if self.url.scheme() == 'https' else 80)
-        self.path = self.url.path(QUrl.ComponentFormattingOption.FullyEncoded)
-        if self.url.hasQuery():
-            query = QUrlQuery(self.url.query())
-            self.queryargs = dict(query.queryItems())
-        else:
-            self.queryargs = None
 
     @property
     def source(self):
